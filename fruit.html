@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Fruit Sales Inventory Management System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #sidebarToggle {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid black;
+        }
+
+        tr:nth-child(even) {background-color: #3997df;} /* Change color as needed */
+        tr:nth-child(odd) {background-color: #d35353;} /* Change color as needed */
+
+        .scrollable {
+            overflow-y: auto;
+            height: 200px; /* Adjust this height to suit your needs */
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html"id="Dashboardlink">Dashboard</a>
+        <a href="fruit.html" id="fruitLink">fruit</a>
+        <a href="juice.html" id="juiceLink">juice</a>
+        <a href="expence.html" id="expenceLink">expence</a>
+        <a href="sales.html" id="salesLink">sales</a>
+    </div>
+
+    <div id="main">
+        <button id="sidebarToggle" onclick="openNav()">☰</button>
+    <div class="top-container">
+        <section id="productSection" class="card">
+            <h2>Product Insertion</h2>
+            <form id="addItemForm">
+                <label for="itemName">Item Name:</label>
+                <input type="text" id="itemName" required>
+                <label for="quantity">Quantity:</label>
+                <input type="number" id="quantity" required>
+                <label for="price">stock Price:</label>
+                <input type="number" step="0.01" id="price" required>
+                <button type="button" onclick="addItem()">Add Item</button>
+            </form>
+        </section>
+
+        <section id="salesSection" class="card">
+            <h2>Sales</h2>
+            <form id="sellItemForm">
+                <label for="sellItemId">Select Item:</label>
+                <select id="sellItemId"></select>
+                <label for="Availablequantity">Available Quantity:</label>
+                <input type="number" id="Availablequantity" readonly >
+                <label for="stocksellingprice">stocking price:</label>
+                <input type="number" id="stocksellingprice" readonly >
+                <label for="sellQuantity">Quantity:</label>
+                <input type="number" id="sellQuantity" required>
+                <label for="sellingprice">selling price:</label>
+                <input type="number" step="0.01" id="sellingprice" required>
+                <button type="button" onclick="sellItem()">Sell Item</button>
+            </form>
+        </section>
+
+        <section id="lossesSection" class="card">
+            <h2>Losses Management</h2>
+            <form id="recordLossForm">
+                <label for="lossItemId">Select Item:</label>
+                <select id="lossItemId"></select>
+                <label for="Availablequantity">Available Quantity:</label>
+                <input type="number" id="Availablequantityloss" readonly >
+                <label for="lossQuantity">Quantity:</label>
+                <input type="number" id="lossQuantity" required>
+                <label for="lossReason">Reason:</label>
+                <input type="text" id="lossReason" required>
+                <button type="button" onclick="recordLoss()">Record Loss</button>
+            </form>
+        </section>
+    </div>
+    <div class="b-container">
+        <section id="inventorySection" class="card">
+            <div class="container">
+                <h2>Inventory Section</h2>
+                <div id="inventoryOutput" class="output scrollable">
+                    <table id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Item ID</th>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <!-- Add this modal HTML to your existing HTML structure -->
+        <div id="editPopup" style="display: none;">
+            <h2>Edit Item</h2>
+            <form id="editForm">
+                <input type="hidden" id="editItemId" name="editItemId">
+                <label for="editItemName">Name:</label>
+                <input type="text" id="editItemName" name="editItemName">
+                <label for="editItemQuantity">Quantity:</label>
+                <input type="number" id="editItemQuantity" name="editItemQuantity">
+                <label for="editItemPrice">Price:</label>
+                <input type="number" id="editItemPrice" name="editItemPrice">
+                <button type="button" onclick="saveEdit()">Save</button>
+                <button type="button" onclick="cancelEdit()">Cancel</button>
+            </form>
+        </div>
+        
+
+    </div>  
+
+</div>
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2023 Fruit Inventory System</p>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+</body>
+
+</html>

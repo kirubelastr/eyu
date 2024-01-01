@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Fruit Sales Inventory Management System</title>
+    <style>
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: .5s;
+            padding-top: 60px;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: .3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #sidebarToggle {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+
+        .top-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .b-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 60px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .dropdown {
+            margin-top: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .edit-delete {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit, .delete {
+            cursor: pointer;
+            color: blue;
+        }
+        #totalSales {
+            position: absolute;
+            right: 100;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html" id="Dashboardlink">Dashboard</a>
+        <a href="fruit.html" id="fruitLink">fruit</a>
+        <a href="juice.html" id="juiceLink">juice</a>
+        <a href="expence.html" id="expenceLink">expence</a>
+        <a href="sales.html" id="salesLink">sales</a>
+    </div>
+    <div id="main">
+        <button id="sidebarToggle" onclick="openNav()">☰</button>
+        <div class="top-container">
+            <section id="dashboardSection" class="card">
+                <div class="dashboard-container">
+                    <h2>sales fruit</h2>
+                    <div class="dropdown">
+                        <label for="salesFilter">Select Filter:</label>
+                        <select id="salesFilter" onchange="updateSalesData()">
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                    <table id="salesTable">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity Sold</th>
+                                <th>Total Sales</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesBody">
+                            <!-- Sales data will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="totalSales"></div>
+                </div>
+            </section>
+        </div>
+        <div class="b-container">
+            <section class="card">
+                <div>
+                    <h2>sales juice</h2>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+   var currentPage = location.pathname.split("/").slice(-1)[0];
+
+function setCurrentPageStyle() {
+    var fruitLink = document.getElementById("fruitLink");
+    var juiceLink = document.getElementById("juiceLink");
+    var expenceLink = document.getElementById("expenceLink");
+    var salesLink = document.getElementById("salesLink");
+    var Dashboardlink = document.getElementById("Dashboardlink");
+
+    fruitLink.style.backgroundColor = "";
+    fruitLink.style.pointerEvents = "auto";
+
+    juiceLink.style.backgroundColor = "";
+    juiceLink.style.pointerEvents = "auto";
+
+    expenceLink.style.backgroundColor = "";
+    expenceLink.style.pointerEvents = "auto";
+
+    Dashboardlink.style.backgroundColor = "";
+    Dashboardlink.style.pointerEvents = "auto";
+
+    if (currentPage === "sales.html") {
+        salesLink.style.backgroundColor = "green";
+        salesLink.style.pointerEvents = "none";
+    }
+}
+
+function openNav() {
+    document.getElementById("sidebar").style.width = "250px";
+    document.getElementById("main").style.marginLeft = "250px";
+}
+
+function closeNav() {
+    document.getElementById("sidebar").style.width = "0";
+    document.getElementById("main").style.marginLeft = "0";
+}
+
+setCurrentPageStyle();
+
+function fetchSalesData(filter) {
+    var filter = document.getElementById('salesFilter').value;
+
+    fetch('sales.php?filter=' + filter)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data received from server:', data);
+
+            var salesBody = document.getElementById('salesBody');
+            salesBody.innerHTML = '';
+
+            document.getElementById('totalSales').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_price), 0).toFixed(2);
+
+            data.forEach(row => {
+                var tr = document.createElement('tr');
+                var tdProduct = document.createElement('td');
+                tdProduct.textContent = row.product_name;
+                tr.appendChild(tdProduct);
+                var tdQuantitySold = document.createElement('td');
+                tdQuantitySold.textContent = row.quantity_sold;
+                tr.appendChild(tdQuantitySold);
+                var tdTotalSales = document.createElement('td');
+                tdTotalSales.textContent = row.total_price;
+                tr.appendChild(tdTotalSales);
+                var tdAction = document.createElement('td');
+                var editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = function() {
+                    editSalesData(row.id);
+                };
+                tdAction.appendChild(editButton);
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function() {
+                    deleteSalesData(row.id);
+                };
+                tdAction.appendChild(deleteButton);
+                tr.appendChild(tdAction);
+                salesBody.appendChild(tr);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function editSalesData(id) {
+    var newQuantitySold = prompt('Enter the new quantity sold:');
+    var newTotalSales = prompt('Enter the new total sales:');
+
+    fetch('sales.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'edit',
+            id: id,
+            quantity_sold: newQuantitySold,
+            total_sales: newTotalSales,
+            filter: document.getElementById('salesFilter').value,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Failed to edit sales data: ' + data.error);
+        } else {
+            updateSalesTable(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    });
+}
+
+function deleteSalesData(id) {
+    fetch('sales.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'delete',
+            id: id,
+            filter: document.getElementById('salesFilter').value,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Failed to delete sales data: ' + data.error);
+        } else {
+            updateSalesTable(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    });
+}
+
+function updateSalesTable(data) {
+    updateSalesData();
+}
+
+function updateSalesData() {
+    var filter = document.getElementById('salesFilter').value;
+    fetchSalesData(filter);
+}
+
+window.onload = function() {
+    updateSalesData();
+};
+    </script>
+</body>
+
+</html>

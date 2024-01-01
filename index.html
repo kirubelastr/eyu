@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Fruit Sales Inventory Management System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #sidebarToggle {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html"id="Dashboardlink">Dashboard</a>
+        <a href="fruit.html" id="fruitLink">fruit</a>
+        <a href="juice.html" id="juiceLink">juice</a>
+        <a href="expence.html" id="expenceLink">expence</a>
+        <a href="sales.html" id="salesLink">sales</a>
+    </div>
+    <script>
+        // Get the current page filename (e.g., "fruit.html")
+        var currentPage = location.pathname.split("/").slice(-1)[0];
+
+        // Function to set the background color and disable the link for the current page
+        function setCurrentPageStyle() {
+            var fruitLink = document.getElementById("fruitLink");
+            var juiceLink = document.getElementById("juiceLink");
+            var expenceLink = document.getElementById("expenceLink");
+            var salesLink = document.getElementById("salesLink");
+            var Dashboardlink = document.getElementById("Dashboardlink");
+            // Reset styles for all links
+            fruitLink.style.backgroundColor = "";
+            fruitLink.style.pointerEvents = "auto";
+
+            juiceLink.style.backgroundColor = "";
+            juiceLink.style.pointerEvents = "auto";
+
+            salesLink.style.backgroundColor = "";
+            salesLink.style.pointerEvents = "auto";
+
+            expenceLink.style.backgroundColor = "";
+            expenceLink.style.pointerEvents = "auto";
+           // Set styles for the current page
+            if (currentPage === "index.html") {  // Corrected the syntax here
+                Dashboardlink.style.backgroundColor = "green";
+                Dashboardlink.style.pointerEvents = "none"; // Disable the link
+            }
+
+        }
+
+        // Call the function on page load
+        setCurrentPageStyle();
+    </script>
+  <div id="main">
+    <button id="sidebarToggle" onclick="openNav()">☰</button>
+<div class="top-container">
+    <section id="dashboardSection" class="card">
+        <div class="dashboard-container">
+            <h2>Dashboard</h2>
+            <div class="dashboard">
+                <div class="chart-container">
+                    <canvas id="myChart" width="400" height="200"></canvas>
+                </div>
+                <div class="summary">
+                    <h3>Inventory Summary</h3>
+                    <p>Total Products: <span id="totalProducts">0</span></p>
+                    <p>Total Sales: <span id="totalSales">0</span></p>
+                    <p>Total Losses: <span id="totalLosses">0</span></p>
+                    <p>Total Profit: $<span id="totalProfit">0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    </div></div>
+    <script>
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+        
+function updateChart(chartData) {
+    // Assuming you have an HTML canvas element with id 'myChart'
+    var ctx = document.getElementById('myChart').getContext('2d');
+
+    // Check if the chart instance exists
+    var existingChart = Chart.getChart(ctx);
+
+    // If the chart instance exists, destroy it
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    // Extract data for labels and quantities
+    var labels = chartData.labels;
+    var quantities = chartData.quantities;
+
+    // Create a bar chart
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Quantity in Inventory',
+                data: quantities,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+
+function updateSummary() {
+    // Fetch data from the server/database for summary
+    // Update the summary information
+    var totalProducts = 0; // Replace with actual count
+    var totalSales = 0; // Replace with actual count
+    var totalLosses = 0; // Replace with actual count
+    var totalProfit = 0; // Replace with actual value
+
+    document.getElementById('totalProducts').innerText = totalProducts;
+    document.getElementById('totalSales').innerText = totalSales;
+    document.getElementById('totalLosses').innerText = totalLosses;
+    document.getElementById('totalProfit').innerText = totalProfit.toFixed(2);
+}
+
+function displayChart() {
+    // Fetch data from the server/database for chart
+    fetchChartData(function (chartData) {
+        // Update the chart data
+        updateChart(chartData);
+    });
+}
+
+function fetchChartData(callback) {
+    // Fetch data from the server/database for chart
+    // Modify the URL and parameters based on your server implementation
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'backend.php?action=chart', true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+                var chartData = JSON.parse(xhr.responseText);
+                callback(chartData);
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+                callback({ error: 'Error parsing JSON' });
+            }
+        }
+    };
+    xhr.send();
+}
+displayChart();
+    </script>
+</body>
+</html>

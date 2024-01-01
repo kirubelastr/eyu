@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Fruit Sales Inventory Management System</title>
+    <style>
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: .5s;
+            padding-top: 60px;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: .3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #sidebarToggle {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 10px;
+        }
+        #expense-section{
+            margin-left: 150px;
+        }
+
+        .top-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .b-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .b-container section {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid black;
+            background-color: #53a8e9; /* Add your preferred background color */
+            color: white; /* Set the text color to contrast with the background */
+        }
+
+        td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid black;
+        }
+
+        .scrollable {
+            max-height: 170px; /* Set the maximum height for the scrollable container */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        tr:nth-child(even) {background-color: #53a8e9;} /* Change color as needed */
+        tr:nth-child(odd) {background-color: #2cd9d9;} /* Change color as needed */
+    </style>
+</head>
+
+<body>
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html" id="Dashboardlink">Dashboard</a>
+        <a href="fruit.html" id="fruitLink">fruit</a>
+        <a href="juice.html" id="juiceLink">juice</a>
+        <a href="expence.html" id="expenceLink">expence</a>
+        <a href="sales.html" id="salesLink">sales</a>
+    </div>
+    <div id="main">
+        <button id="sidebarToggle" onclick="openNav()">☰</button>
+        <div class="top-container">
+            <section id="dashboardSection" >
+                <div class="card">
+                    <h2 style="margin-left: 150px;">expence</h2>
+                    <div id="expense-section">
+                        <form id="expense-form">
+                            <label for="expense-type">Expense Type:</label><br>
+                            <select id="expense-type" name="expense-type"required>
+                                <!-- Options will be dynamically added here -->
+                            </select><br>
+                            <label for="expense-reason">Expense Reason:</label><br>
+                            <input type="text" id="expense-reason" name="expense-reason"required><br>
+                            <label for="total-cost">Total Cost:</label><br>
+                            <input type="number" step="0.01" id="total-cost" name="total-cost"required><br>
+                            <input type="submit" value="Submit"onclick="submitforms()">
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <section class="card" style="width: 48%; margin-top: 10px;margin-bottom: 30px;">
+                <h2>Daily Expenses</h2>
+                <div id="expenses-daily" class="scrollable">
+                    <table></table> <!-- Add this line -->
+                </div>
+                <div class="total" id="total-daily"></div>
+            </section>
+        </div>
+        <div class="b-container">
+           
+            <section class="card">
+                <h2>Weekly Expenses</h2>
+                <div id="expenses-weekly" class="scrollable">
+                    <table></table> <!-- Add this line -->
+                </div>
+                <div class="total" id="total-weekly"></div>
+            </section>
+            <section class="card">
+                <h2>Monthly Expenses</h2>
+                <div id="expenses-monthly" class="scrollable">
+                    <table></table> <!-- Add this line -->
+                </div>
+                <div class="total" id="total-monthly"></div>
+            </section>
+            
+        </div>
+        <section class="card" style="display: flex; flex-direction: row; align-items: flex-start;">
+            <div style="margin-right: 20px;">
+                <h2>Date Interval Expenses</h2>
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" name="start-date" required>
+                <label for="end-date">End Date:</label>
+                <input type="date" id="end-date" name="end-date" required>
+                <button onclick="fetchDateIntervalExpenses()">Fetch Expenses</button>
+            </div>
+            <div id="expenses-date-interval" style="flex: 1;">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Expense ID</th>
+                            <th>Expense Type</th>
+                            <th>Expense Reason</th>
+                            <th>Expense Date</th>
+                            <th>Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="date-interval-table-body" class="scrollable"></tbody>
+                </table>
+            </div>
+            <div class="total" id="total-date-interval"style="display: flex; flex-direction: row; align-items: flex-start;"></div>
+        </section>
+        
+    </div>
+
+    <script>
+        var currentPage = location.pathname.split("/").slice(-1)[0];
+        function setCurrentPageStyle() {
+            var fruitLink = document.getElementById("fruitLink");
+            var juiceLink = document.getElementById("juiceLink");
+            var expenceLink = document.getElementById("expenceLink");
+            var salesLink = document.getElementById("salesLink");
+            var Dashboardlink = document.getElementById("Dashboardlink");
+            // Reset styles for all links
+            fruitLink.style.backgroundColor = "";
+            fruitLink.style.pointerEvents = "auto";
+
+            juiceLink.style.backgroundColor = "";
+            juiceLink.style.pointerEvents = "auto";
+
+            salesLink.style.backgroundColor = "";
+            salesLink.style.pointerEvents = "auto";
+
+            Dashboardlink.style.backgroundColor = "";
+            Dashboardlink.style.pointerEvents = "auto";
+            if (currentPage === "expence.html") {
+                expenceLink.style.backgroundColor = "green";
+                expenceLink.style.pointerEvents = "none";
+            } 
+        }
+
+        function formatDateTime(dateTimeString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+            return new Date(dateTimeString).toLocaleDateString('en-US', options);
+        }
+
+        function makeAjaxRequest(method, url, data, successCallback, errorCallback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(method, url, true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    successCallback(response);
+                } else {
+                    errorCallback(xhr.status);
+                }
+            };
+            xhr.onerror = function () {
+                errorCallback(xhr.status);
+            };
+            xhr.send(data);
+        }
+        function fetchDateIntervalExpenses() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    if (startDate > endDate) {
+        alert("End date must be greater than start date");
+        return;
+    }
+
+    // Function to create table rows
+    function createTableRow(expense) {
+        return `<tr>
+                    <td>${expense.ExpenseID}</td>
+                    <td>${expense.ExpenseType}</td>
+                    <td>${expense.ExpenseReason}</td>
+                    <td>${expense.ExpenseDate}</td>
+                    <td>${expense.TotalCost}</td>
+                </tr>`;
+    }
+// Function to calculate total cost
+function calculateTotalCost(expenses) {
+    return expenses.reduce((total, expense) => total + parseFloat(expense.TotalCost), 0);
+}
+
+// Your existing code
+fetch(`expencetables.php?startDate=${startDate}&endDate=${endDate}`)
+    .then(response => response.json())
+    .then(data => {
+        const dateIntervalExpenses = data.dateIntervalExpenses;
+
+        // Check if dateIntervalExpenses is an array before updating the table body
+        if (Array.isArray(dateIntervalExpenses)) {
+            // Populate date interval expenses table body
+            const tableBody = document.getElementById('date-interval-table-body');
+            tableBody.innerHTML = dateIntervalExpenses.map(createTableRow).join('');
+
+            // Update the total
+            document.getElementById('total-date-interval').textContent = 'Total: ' + calculateTotalCost(dateIntervalExpenses);
+        } else {
+            console.error('Invalid data received:', data);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+
+}
+
+
+        function updateExpenseTypes() {
+            makeAjaxRequest("GET", "expence.php", null, function (response) {
+                console.log(response);
+                if (response.error) {
+                    console.error(response.error);
+                } else {
+                    var expenseTypesDropdown = document.getElementById("expense-type");
+                    expenseTypesDropdown.innerHTML = '';
+                    response.expenseTypes.forEach(function (type) {
+                        var option = document.createElement("option");
+                        option.value = type.ExpenseTypeName.toLowerCase();
+                        option.text = type.ExpenseTypeName;
+                        expenseTypesDropdown.appendChild(option);
+                    });
+                }
+            }, function (error) {
+                console.error("Request failed: " + error);
+            });
+        }
+
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+
+        updateExpenseTypes();
+        function submitforms() {
+            console.log('starting form submittion');
+            document.getElementById('expense-form').addEventListener('submit', function (event) {
+                event.preventDefault();
+                var expenseType = document.getElementById('expense-type').value;
+                var expenseReason = document.getElementById('expense-reason').value;
+                var totalCost = document.getElementById('total-cost').value;
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'expence.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.send('section=expenseSection&expense-type=' + encodeURIComponent(expenseType) + '&expense-reason=' + encodeURIComponent(expenseReason) + '&total-cost=' + encodeURIComponent(totalCost));
+                fetchExpenses();
+            });
+            // fetchExpenses();
+        }
+        function fetchExpenses() {
+            fetch('expencetables.php')
+                .then(response => response.json())
+                .then(data => {
+                    const { dailyExpenses, weeklyExpenses, monthlyExpenses } = data;
+
+                    // Function to create table rows
+                    function createTableRow(expense) {
+                        return `<tr >
+                                    <td>${expense.ExpenseID}</td>
+                                    <td>${expense.ExpenseType}</td>
+                                    <td>${expense.ExpenseReason}</td>
+                                    <td>${expense.ExpenseDate}</td>
+                                    <td>${expense.TotalCost}</td>
+                                </tr>`;
+                    }
+
+                    // Function to calculate total cost
+                    function calculateTotalCost(expenses) {
+                        return expenses.reduce((total, expense) => total + parseFloat(expense.TotalCost), 0);
+                    }
+
+                    // Function to create table header
+                    function createTableHeader() {
+                        return `<thead>
+                                    <tr>
+                                        <th>Expense ID</th>
+                                        <th>Expense Type</th>
+                                        <th>Expense Reason</th>
+                                        <th>Expense Date</th>
+                                        <th>Total Cost</th>
+                                    </tr>
+                                </thead>`;
+                    }
+
+                    // Populate daily expenses table and total
+                    const dailyTable = document.querySelector('#expenses-daily table');
+                    dailyTable.innerHTML = createTableHeader() + dailyExpenses.map(createTableRow).join('');
+                    document.querySelector('#total-daily').textContent = 'Total: ' + calculateTotalCost(dailyExpenses);
+
+                    // Populate weekly expenses table and total
+                    const weeklyTable = document.querySelector('#expenses-weekly table');
+                    weeklyTable.innerHTML = createTableHeader() + weeklyExpenses.map(createTableRow).join('');
+                    document.querySelector('#total-weekly').textContent = 'Total: ' + calculateTotalCost(weeklyExpenses);
+
+                    // Populate monthly expenses table and total
+                    const monthlyTable = document.querySelector('#expenses-monthly table');
+                    monthlyTable.innerHTML = createTableHeader() + monthlyExpenses.map(createTableRow).join('');
+                    document.querySelector('#total-monthly').textContent = 'Total: ' + calculateTotalCost(monthlyExpenses);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+
+        // Call the function to fetch expenses
+        fetchExpenses();
+
+        setCurrentPageStyle();
+    </script>
+</body>
+
+</html>

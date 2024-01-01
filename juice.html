@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Fruit Sales Inventory Management System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        #sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        #sidebar a:hover {
+            color: #f1f1f1;
+        }
+
+        #sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+        #sidebarToggle {
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        #main {
+            transition: margin-left .5s;
+            padding: 16px;
+        }
+        #inventoryTable {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #inventoryTable th, #inventoryTable td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        #inventoryTable th {
+            background-color: #333;
+            color: white;
+        }
+
+        #inventoryTable tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #inventoryTable tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        .output {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+        <a href="index.html"id="Dashboardlink">Dashboard</a>
+        <a href="fruit.html" id="fruitLink">fruit</a>
+        <a href="juice.html" id="juiceLink">juice</a>
+        <a href="expence.html" id="expenceLink">expence</a>
+        <a href="sales.html" id="salesLink">sales</a>
+    </div>
+  <div id="main">
+    <button id="sidebarToggle" onclick="openNav()">☰</button>
+<div class="top-container">
+    <section id="dashboardSection" class="card">
+        <div class="dashboard-container">
+            <h2>juice</h2>
+            <h1>Juice House</h1>
+
+            <h2>Add New Raw Material</h2>
+            <form id="addMaterialForm">
+                <label for="materialName">Name:</label><br>
+                <input type="text" id="materialName" name="materialName"><br>
+                <label for="materialPrice">Price:</label><br>
+                <input type="number" id="materialPrice" name="materialPrice"><br>
+                <label for="materialQuantity">Quantity:</label><br>
+                <input type="number" id="materialQuantity" name="materialQuantity"><br>
+                <input type="submit" value="Add Material">
+            </form>
+        
+            <h2>Inventory</h2>
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Inventory data will be inserted here -->
+                </tbody>
+            </table>
+        
+            <h2>Sell Juice</h2>
+            <form id="sellJuiceForm">
+                <label for="juiceName">Juice:</label><br>
+                <select id="juiceName" name="juiceName">
+                    <!-- Juice options will be inserted here -->
+                </select><br>
+                <label for="juiceQuantity">Quantity:</label><br>
+                <input type="number" id="juiceQuantity" name="juiceQuantity"><br>
+                <input type="submit" value="Sell Juice">
+            </form>
+
+        </div>
+    </section>
+    
+    </div>
+    <div class="b-container">
+        <!-- Your existing sections -->
+
+        <!-- New section for Raw Materials and Combinations -->
+        <section id="juiceHouseSection" class="card">
+            <h2>Juice House Management</h2>
+
+            <!-- Raw Materials Form -->
+            <form id="rawMaterialsForm">
+                <label for="rawMaterialName">Raw Material Name:</label>
+                <input type="text" id="rawMaterialName" required>
+                <label for="rawMaterialQuantity">Quantity:</label>
+                <input type="number" id="rawMaterialQuantity" required>
+                <button type="button" onclick="addRawMaterial()">Add Raw Material</button>
+            </form>
+
+            <!-- Combinations Form -->
+            <form id="combinationsForm">
+                <label for="combinationName">Combination Name:</label>
+                <input type="text" id="combinationName" required>
+                <label for="combinationIngredients">Ingredients:</label>
+                <textarea id="combinationIngredients" required></textarea>
+                <button type="button" onclick="createCombination()">Create Combination</button>
+            </form>
+
+            <!-- Sell Juice and Food Form -->
+            <form id="sellJuiceFoodForm">
+                <label for="sellProduct">Select Product:</label>
+                <select id="sellProduct"></select>
+                <label for="sellProductQuantity">Quantity:</label>
+                <input type="number" id="sellProductQuantity" required>
+                <label for="sellProductPrice">Price:</label>
+                <input type="number" step="0.01" id="sellProductPrice" required>
+                <button type="button" onclick="sellJuiceFood()">Sell Product</button>
+            </form>
+        </section>
+
+        <!-- Inventory Section -->
+        <section id="inventorySection" class="card">
+            <div class="container">
+                <h2>Inventory Section</h2>
+                <div id="inventoryOutput" class="output scrollable">
+                    <table id="inventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Item ID</th>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+    <script>
+         // Get the current page filename (e.g., "fruit.html")
+         var currentPage = location.pathname.split("/").slice(-1)[0];
+
+        // Function to set the background color and disable the link for the current page
+        function setCurrentPageStyle() {
+            var fruitLink = document.getElementById("fruitLink");
+            var juiceLink = document.getElementById("juiceLink");
+            var expenceLink = document.getElementById("expenceLink");
+            var expenceLink = document.getElementById("salesLink");
+            var expenceLink = document.getElementById("Dashboardlink");
+            // Reset styles for all links
+            fruitLink.style.backgroundColor = "";
+            fruitLink.style.pointerEvents = "auto";
+
+            juiceLink.style.backgroundColor = "";
+            juiceLink.style.pointerEvents = "auto";
+
+            expenceLink.style.backgroundColor = "";
+            expenceLink.style.pointerEvents = "auto";
+
+            Dashboardlink.style.backgroundColor = "";
+            Dashboardlink.style.pointerEvents = "auto";
+
+        // Set styles for the current page
+            if (currentPage === "juice.html") {
+                juiceLink.style.backgroundColor = "green";
+                juiceLink.style.pointerEvents = "none"; // Disable the link
+            }
+        }
+
+        // Call the function on page load
+        setCurrentPageStyle();
+        function openNav() {
+            document.getElementById("sidebar").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function closeNav() {
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+        // Add Raw Material
+        function addRawMaterial() {
+            let name = document.getElementById("rawMaterialName").value;
+            let quantity = document.getElementById("rawMaterialQuantity").value;
+
+            $.post("process.php", { action: "addRawMaterial", rawMaterialName: name, rawMaterialQuantity: quantity }, function () {
+                // Refresh or update the UI as needed
+            });
+        }
+
+        // Create Combination
+        function createCombination() {
+            let name = document.getElementById("combinationName").value;
+            let ingredients = document.getElementById("combinationIngredients").value;
+
+            $.post("process.php", { action: "createCombination", combinationName: name, combinationIngredients: ingredients }, function () {
+                // Refresh or update the UI as needed
+            });
+        }
+
+        // Sell Juice/Food
+        function sellJuiceFood() {
+            let productId = document.getElementById("sellProduct").value;
+            let quantity = document.getElementById("sellProductQuantity").value;
+            let price = document.getElementById("sellProductPrice").value;
+
+            $.post("process.php", { action: "sellProduct", sellProduct: productId, sellProductQuantity: quantity, sellProductPrice: price }, function () {
+                // Refresh or update the UI as needed
+            });
+        }
+
+        // Record Loss
+        function recordLoss() {
+            let itemId = document.getElementById("lossItemId").value;
+            let quantity = document.getElementById("lossQuantity").value;
+            let reason = document.getElementById("lossReason").value;
+
+            $.post("process.php", { action: "recordLoss", lossItemId: itemId, lossQuantity: quantity, lossReason: reason }, function () {
+                // Refresh or update the UI as needed
+            });
+        }
+        function loadInventoryTable() {
+            $.get("process.php", function (data) {
+                $("#inventoryTableBody").html(data);
+            });
+        }
+
+        // Call loadInventoryTable function on page load
+        $(document).ready(function () {
+            loadInventoryTable();
+        });
+    </script>
+</body>
+</html>
