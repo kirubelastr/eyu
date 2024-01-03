@@ -17,20 +17,20 @@ function getSalesData($conn, $filter) {
         case 'dailyj':
             $sql = "SELECT p.name as product_name, SUM(s.quantity) as quantity_sold, SUM(s.selling_price) as total_price
                     FROM sales s
-                    JOIN inventory p ON s.item_id = p.id
+                    JOIN combinations p ON s.item_id = p.id
                     WHERE s.created_at = CURDATE()";
             break;
         case 'weeklyj':
             $sql = "SELECT p.name as product_name, SUM(s.quantity) as quantity_sold, SUM(s.selling_price) as total_price
                     FROM sales s
-                    JOIN inventory p ON s.item_id = p.id
+                    JOIN combinations p ON s.item_id = p.id
                     WHERE YEARWEEK(s.created_at, 1) = YEARWEEK(CURDATE(), 1)
                     GROUP BY p.name";
             break;
         case 'monthlyj':
             $sql = "SELECT p.name as product_name, SUM(s.quantity) as quantity_sold, SUM(s.selling_price) as total_price
                     FROM sales s
-                    JOIN inventory p ON s.item_id = p.id
+                    JOIN combinations p ON s.item_id = p.id
                     WHERE MONTH(s.created_at) = MONTH(CURDATE()) AND YEAR(s.created_at) = YEAR(CURDATE())
                     GROUP BY p.name";
             break;

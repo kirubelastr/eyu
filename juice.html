@@ -56,28 +56,29 @@
             transition: margin-left .5s;
             padding: 16px;
         }
-        #inventoryTable {
+        Table {
             width: 100%;
             margin-top: 20px;
         }
 
-        #inventoryTable th, #inventoryTable td {
+        th,td {
             padding: 10px;
             text-align: center;
         }
 
-        #inventoryTable th {
+        th {
             background-color: #333;
             color: white;
         }
 
-        #inventoryTable tbody tr:nth-child(even) {
+        tbody tr:nth-child(even) {
             background-color: #f2f2f2;
         }
 
-        #inventoryTable tbody tr:nth-child(odd) {
+        tbody tr:nth-child(odd) {
             background-color: #ffffff;
         }
+
         .output {
             max-height: 200px;
             overflow-y: auto;
@@ -98,6 +99,7 @@
   <div id="main">
     <button id="sidebarToggle" onclick="openNav()">☰</button>
     <div id="main">
+        <div class="top-container">
         <section id="rawMaterialSection" class="card">
             <h2>Raw Materials</h2>
             <form id="rawMaterialForm">
@@ -105,7 +107,9 @@
                 <input type="text" id="rawMaterialName" required>
                 <label for="rawMaterialQuantity">Quantity:</label>
                 <input type="number" step="0.01" id="rawMaterialQuantity" required>
-                <button type="button" onclick="addRawMaterial()">Add Raw Material</button>
+                <label for="rawMaterialprice">price:</label>
+                <input type="number" step="0.01" id="rawMaterialprice" required>
+                <button type="submit" onclick="addRawMaterial()">Add Raw Material</button>
             </form>
         </section>
 
@@ -113,13 +117,16 @@
             <h2>Sales</h2>
             <form id="sellItemForm">
                 <label for="sellItemId">Select Item:</label>
-                <select id="sellItemId"></select>
+                <select id="sellItemId">
+                    <option value="" disabled selected hidden>Select a the combinations</option>
+                </select>      
+                <label for="maxQuantity">available Quantity:</label>
+                <input type="number" id="maxQuantity" readonly>
                 <label for="sellQuantity">Quantity:</label>
-                <input type="number" id="sellQuantity" required>
-                <!-- Display available quantity for sales -->
-                <label for="availableQuantity">Available Quantity:</label>
-                <input type="text" id="availableQuantity" readonly>
-                <button type="button" onclick="sellItem()">Sell Item</button>
+                <input type="number" id="sellQuantity" required>  
+                <label for="sellingprice">selling price:</label>
+                <input type="number" id="sellingprice" required>
+                <button type="submit" onclick="sellItem()">Sell Item</button>
             </form>
         </section>
 
@@ -128,35 +135,50 @@
             <h2>Losses Management</h2>
             <form id="recordLossForm">
                 <label for="lossItemId">Select Item:</label>
-                <select id="lossItemId"></select>
+                <select id="lossItemId">
+                    <option value="" disabled selected hidden>Select a raw material</option>
+                </select>
+                <label for="avalQuantity">available Quantity:</label>
+                <input type="number" id="avalQuantity" readonly>
                 <label for="lossQuantity">Quantity:</label>
                 <input type="number" id="lossQuantity" required>
                 <label for="lossReason">Reason:</label>
                 <input type="text" id="lossReason" required>
-                <button type="button" onclick="recordLoss()">Record Loss</button>
+                <button type="submit"onclick="recordLoss()">Record Loss</button>
             </form>
         </section>
+        </div>
 
         <section id="combinationSection" class="card">
             <h2>Combinations</h2>
             <form id="combinationForm">
                 <label for="combinationName">Combination Name:</label>
                 <input type="text" id="combinationName" required>
-                
-                <table id="rawMaterialTable">
-                    <thead>
-                        <tr>
-                            <th>Raw Material</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rawMaterialTableBody">
-                        <!-- Raw material rows will be dynamically added here -->
-                    </tbody>
-                </table>
-        
-                <button type="button" onclick="addCombination()">Add Combination</button>
+                <label for="rowItemId">Select row material:</label>
+                <select id="rowItemId">
+                    <option value="" disabled selected hidden>Select a raw material</option>
+                </select>
+                <label for="rowavailableQuantity">available row material quantity:</label>
+                <input type="text" id="rowavailableQuantity" readonly>
+                <label for="rowquantity">Select row matrial quantity:</label>
+                <input type="number" step="0.01" id="rowquantity" required>
+                <button type="submit" onclick="addCombination()">Add Combination</button>
             </form>
+             
+            <table id="rawMaterialTable">
+                <thead>
+                    <tr>
+                        <th>combination name</th>
+                        <th>Row id</th>
+                        <th>Row Material</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody id="rawMaterialTableBody">
+                    <!-- Raw material rows will be dynamically added here -->
+                </tbody>
+            </table>
+            <button type="button" onclick="submitCombination()">Submit Combination</button> <!-- New button -->
         </section>
         
 
@@ -184,6 +206,7 @@
                         <th>Item Name</th>
                         <th>Quantity</th>
                         <th>Reason</th>
+                        <th>selling price</th>
                     </tr>
                 </thead>
                 <tbody id="salesAndLossesTableBody"></tbody>
@@ -225,288 +248,548 @@
             document.getElementById("sidebar").style.width = "0";
             document.getElementById("main").style.marginLeft = "0";
         }
+       
         document.addEventListener("DOMContentLoaded", function () {
-    loadDropdowns();
-    displayInventory();
-    displaySalesAndLosses();
-    addRawMaterialRow(); // Add an initial row for raw materials in the combination form
-});
-
-function loadDropdowns() {
-    fetch('server.php?action=getDropdownData')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Dropdown data:", data);
-            // Rest of the code
-        })
-        .catch(error => {
-            console.error('Error fetching dropdown data:', error);
-            console.log('Response:', error.response.text());
-        });
-}
-
-
-        function addRawMaterial() {
-            var rawMaterialName = getValueById("rawMaterialName");
-            var rawMaterialQuantity = getValueById("rawMaterialQuantity");
-
-            sendData(
-                "addRawMaterial",
-                { rawMaterialName, rawMaterialQuantity },
-                function (response) {
-                    console.log(response);
-                    displayInventory();
-                    loadDropdowns();
-                },
-                function (error) {
-                    console.log("Error adding raw material:", error);
-                }
-            );
-        } 
-function addCombination() {
-    var combinationName = getValueById("combinationName");
-    var rawMaterialRows = getRawMaterialRows();
-
-    sendData(
-        "addCombination",
-        { combinationName, rawMaterialRows },
-        function (response) {
-            console.log(response);
+            loadInventory();
             displayInventory();
             displaySalesAndLosses();
-            loadDropdowns();
+            loadCombinations();
+            loadLossesDropdown();
+
+        // Update the available quantity when the selected option changes
+        document.getElementById('lossItemId').addEventListener('change', updateAvalQuantity);
+        });
+
+        function addRawMaterial() {
+
+            var itemName = document.getElementById('rawMaterialName').value;
+            var quantity = document.getElementById('rawMaterialQuantity').value;
+            var price = document.getElementById('rawMaterialprice').value;
+             // Check if any of the inputs are empty
+            if (!itemName || !quantity || !price) {
+                console.log("Inputs cannot be empty.");
+                return; // Exit the function
+            }
+            sendData('addRawMaterial', { itemName, quantity, price }, function () {
+                displayInventory();
+            });
+
+            console.log("add item called ended");
         }
-    );
-}
 
-function getRawMaterialRows() {
-    var rawMaterialRows = [];
-    var tableRows = document.querySelectorAll("#rawMaterialTableBody tr");
+        function sendData(section, data, callback) {
+            console.log('Sending data:', data);
 
-    tableRows.forEach(function (row) {
-        var rawMaterial = {
-            name: row.querySelector(".rawMaterialName").value,
-            quantity: row.querySelector(".rawMaterialQuantity").value
-        };
-        rawMaterialRows.push(rawMaterial);
-    });
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'test.php', true);
 
-    return rawMaterialRows;
-}
+            // Set the content type to application/x-www-form-urlencoded
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-function addRawMaterialRow() {
-    var rawMaterialTableBody = document.getElementById("rawMaterialTableBody");
-    var newRow = rawMaterialTableBody.insertRow();
-    var cell1 = newRow.insertCell(0);
-    var cell2 = newRow.insertCell(1);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    console.log('Response:', xhr.responseText);
+                    if (xhr.status == 200) {
+                        try {
+                            var responseData = JSON.parse(xhr.responseText);
+                            console.log('Parsed Response:', responseData);
+                            // Check if handleResponse function exists before calling it
+                            if (typeof handleResponse === 'function') {
+                                handleResponse(section);
+                            }
+                            if (typeof callback === 'function') {
+                                callback(responseData);
+                            }
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            alert('Error parsing JSON');
+                        }
+                    } else {
+                        console.error('Request failed with status:', xhr.status);
+                        alert('Request failed with status: ' + xhr.status);
+                    }
+                }
+            };
 
-    cell1.innerHTML = `<input type="text" class="rawMaterialName" required>`;
-    cell2.innerHTML = `<input type="number" step="0.01" class="rawMaterialQuantity" required>`;
-}
+            // Convert the data object to a URL-encoded string
+            var encodedData = encodeData(data);
 
+            xhr.send(encodedData);
+        }
+
+        function handleResponse(section) {
+            // You can customize this function based on your needs
+            console.log(`Response for section '${section}' handled.`);
+        }
+
+        function encodeData(data) {
+            return Object.keys(data).map(function (key) {
+                return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+            }).join('&');
+        }
+
+        function loadCombinations() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_combinations.php', true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var responseData = JSON.parse(xhr.responseText);
+                    console.log('Received data:', responseData); // Log the received data
+                    var select = document.getElementById('sellItemId');
+                    select.innerHTML = ""; // Clear the select options
+                    for (var i = 0; i < responseData.length; i++) {
+                        var opt = document.createElement('option');
+                        opt.value = responseData[i].id; // Set the value to the id
+                        opt.innerHTML = responseData[i].name; // Set the innerHTML to the name
+                        opt.setAttribute('availableQuantity', responseData[i].maxQuantity); // Set the availableQuantity attribute
+                        select.appendChild(opt);
+                    }
+                    updateMaxQuantity(); // Update the max quantity for the initially selected option
+                }
+            };
+
+            xhr.send();
+        }
+
+        function updateMaxQuantity() {
+            var select = document.getElementById('sellItemId');
+            var input = document.getElementById('maxQuantity'); // Assuming you have an input element with id 'maxQuantity'
+            var selectedOption = select.options[select.selectedIndex];
+            var maxQuantity = selectedOption.getAttribute('availableQuantity');
+            input.value = maxQuantity;
+        }
+        // Update the max quantity when the selected option changes
+        document.getElementById('sellItemId').addEventListener('change', updateMaxQuantity);
 
         function sellItem() {
-            var productId = getValueById("sellItemId");
-            var quantitySold = getValueById("sellQuantity");
-
-            // Check if the available quantity is sufficient for the sale
-            if (getAvailableQuantity(productId) >= quantitySold) {
-                sendData("sellItem", { productId, quantitySold }, function (response) {
-                    console.log(response);
-                    displayInventory();
-                    displaySalesAndLosses();
-                    loadDropdowns();
+            console.log("sell");
+            
+            var combinationId = document.getElementById('sellItemId').value;
+            var quantity = document.getElementById('sellQuantity').value;
+            var sellingPrice = document.getElementById('sellingprice').value;
+            var maxq = document.getElementById('maxQuantity').value;
+            console.log(combinationId+quantity);
+            if (!combinationId || !quantity || !sellingPrice || !maxq ) {
+                console.log("Inputs cannot be empty.");
+                return; // Exit the function
+            }
+            if (maxq < quantity) {
+                alert('The quantity being inserted is greater than the available quantity.');
+                return; // Exit the function
+            }else{
+                console.log('trying:');
+                var data = {
+                    combinationId: combinationId,
+                    quantity: quantity,
+                    sellingPrice: sellingPrice
+                };
+                console.log('Sending data:', data);
+                sendDatas('sellItem', data, function (responseData) {
+                    // Handle the server's response
+                    console.log("Server response:", responseData);
+                    // Perform additional actions based on the response
                 });
+            }
+
+        }
+
+    function sendDatas(section, data, callback) {
+        console.log('Sending data:', data);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'get_combinations.php', true);
+
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                console.log('Response:', xhr.responseText);
+                if (xhr.status == 200) {
+                    try {
+                        var responseData = JSON.parse(xhr.responseText);
+                        console.log('Parsed Response:', responseData);
+                        if (typeof handleResponse === 'function') {
+                            handleResponses(section);
+                        }
+                        if (typeof callback === 'function') {
+                            callback(responseData);
+                        }
+                    } catch (error) {
+                        console.log('Error parsing JSON:', error);
+                        alert('Error parsing JSON');
+                    }
+                } else {
+                    console.log('Request failed with status:', xhr.status);
+                    alert('Request failed with status: ' + xhr.status);
+                }
+            }
+        };
+
+        var jsonData = JSON.stringify(data);
+
+        xhr.send(jsonData);
+    }/////////////////////////////////////////////////////
+// Define the loadLossesDropdown function first
+
+function loadLossesDropdown() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'get_losses.php', true);
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var responseData = JSON.parse(xhr.responseText);
+
+            // Check if responseData is an array
+            if (Array.isArray(responseData)) {
+                var select = document.getElementById('lossItemId');
+                select.innerHTML = ""; // Clear the select options
+
+                for (var i = 0; i < responseData.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = responseData[i].id;
+                    opt.innerHTML = responseData[i].name;
+                    opt.setAttribute('availableQ', responseData[i].quantity);
+                    select.appendChild(opt);
+                }
+
+                // Update the available quantity for the initially selected option
+                updateAvalQuantity();
             } else {
-                alert("Insufficient quantity available for sale!");
+                console.error('Invalid response data:', responseData);
             }
         }
+    };
 
-        function recordLoss() {
-            var lossItemId = getValueById("lossItemId");
-            var lossQuantity = getValueById("lossQuantity");
-            var lossReason = getValueById("lossReason");
-
-            // Check if the available quantity is sufficient for the loss
-            if (getAvailableQuantity(lossItemId) >= lossQuantity) {
-                sendData("recordLoss", { lossItemId, lossQuantity, lossReason }, function (response) {
-                    console.log(response);
-                    displayInventory();
-                    displaySalesAndLosses();
-                    loadDropdowns();
-                });
-            } else {
-                alert("Insufficient quantity available for loss!");
-            }
-        }
-
-     // ... (Your existing code)
-
-     function fetchData(url, options) {
-    return fetch(url, options)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .catch((error) => {
-            console.error("Fetch Error:", error);
-            throw error; // re-throw the error to be caught by the next catch block
-        });
-}
-      
-function fetchDataFromServer(action, data) {
-    // Make an AJAX request to the server
-    return fetchData(`server.php?action=${action}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    });
+    xhr.send();
 }
 
-        function fetchInventoryData() {
-            return fetchDataFromServer("getInventoryData", {});
-        }
+function updateAvalQuantity() {
+    var select = document.getElementById('lossItemId');
+    var input = document.getElementById('avalQuantity');
+    var selectedOption = select.options[select.selectedIndex];
 
-        function fetchSalesAndLossesData() {
-            return fetchDataFromServer("getSalesAndLossesData", {});
-        }
+    // Check if selectedOption is defined before accessing its attributes
+    if (selectedOption) {
+        var maxQuantity = selectedOption.getAttribute('availableQ');
+        console.log('Max Quantity:', maxQuantity); // Log the max quantity
+        input.value = maxQuantity;
+    }
+}
 
-function updateDropdownOptions(dropdown, data) {
-    if (dropdown) {
-        data.forEach(function (item) {
-            var option = document.createElement("option");
-            option.value = item.id;
-            option.text = item.name;
-            dropdown.add(option);
+function recordLoss() {
+    var rowid = document.getElementById('lossItemId').value;
+    var quantity = document.getElementById('lossQuantity').value;
+    var lossReason = document.getElementById('lossReason').value;
+    var maxq = document.getElementById('avalQuantity').value;
+
+    if (!rowid || !quantity || !lossReason || !maxq) {
+        console.log("Inputs cannot be empty.");
+        return; // Exit the function
+    }
+
+    if (maxq < quantity) {
+        alert('The quantity being inserted is greater than the available quantity.');
+        return; // Exit the function
+    } else {
+        console.log('trying:');
+        var data = {
+            rowid: rowid,
+            quantity: quantity,
+            lossReason: lossReason
+        };
+        console.log('Sending data:', data);
+        sendDatal('lossitem', data, function (responseData) {
+            // Handle the server's response
+            console.log("Server response:", responseData);
+            // Perform additional actions based on the response
+            loadLossesDropdown(); // Reload the dropdown after recording the loss
         });
     }
 }
 
-function updateDropdown(dropdownId, data) {
-    var dropdown = document.getElementById(dropdownId);
+function sendDatal(section, data, callback) {
+    console.log('Sending data:', data);
 
-    // Clear existing options before updating
-    clearDropdownOptions(dropdown);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'get_losses.php', true);
 
-    // Add a placeholder option
-    var placeholderOption = document.createElement("option");
-    placeholderOption.text = "Please select an item";
-    placeholderOption.value = "";
-    dropdown.add(placeholderOption, 0);
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
-    // Update the dropdown options
-    updateDropdownOptions(dropdown, data);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log('Response Status:', xhr.status);
+            console.log('Response Text:', xhr.responseText);
+
+            if (xhr.status == 200) {
+                // Parse and process the response data
+                var responseData = JSON.parse(xhr.responseText);
+                // Additional logic to populate the dropdown options
+                callback(responseData);
+            } else {
+                // Handle error cases
+                console.error('Error in AJAX request:', xhr.status);
+            }
+        }
+    };
+
+    var jsonData = JSON.stringify(data);
+    xhr.send(jsonData);
 }
 
-        function clearTable(tableBody) {
-            while (tableBody.firstChild) {
-                tableBody.removeChild(tableBody.firstChild);
+/////////////////////////////////////////////////////
+
+        // Assuming you have a function to fetch the inventory from the server
+        function fetchInventory() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'inventory.php', false); // Change this to the URL of your PHP file
+            xhr.send();
+
+            if (xhr.status == 200) {
+                return JSON.parse(xhr.responseText);
+            } else {
+                console.error('Error fetching inventory:', xhr.status);
+                return [];
+            }
+        }
+        function loadInventory() {
+            var select = document.getElementById('rowItemId');
+            var inventory = fetchInventory().data;
+
+            console.log('Inventory:', inventory);
+
+            for (var i = 0; i < inventory.length; i++) {
+                var option = document.createElement('option');
+                option.value = inventory[i].id;
+                option.text = inventory[i].name;
+                select.appendChild(option);
             }
         }
 
-        function clearDropdownOptions(dropdown) {
-            while (dropdown.options.length > 0) {
-                dropdown.remove(0);
-            }
-        }
+        document.getElementById('rowItemId').addEventListener('change', function () {
+            var selectedItem = this.value;
+            var inventory = fetchInventory().data; // Access the 'data' property
 
-        function updateDropdownOptions(dropdown, data) {
-            data.forEach(function (item) {
-                var option = document.createElement("option");
-                option.value = item.id;
-                option.text = item.name;
-                dropdown.add(option);
+            var selectedInventoryItem = inventory.find(function (item) {
+                return item.id === selectedItem;
             });
-        }
 
-        function displayInventory() {
-            // Fetch inventory data from the server/database
-            fetchInventoryData().then(function (inventoryData) {
-                // Display inventory data in the table
-                var inventoryTableBody = document.getElementById("inventoryTableBody");
-                clearTable(inventoryTableBody);
-
-                inventoryData.forEach(function (item) {
-                    var row = inventoryTableBody.insertRow();
-                    row.insertCell(0).textContent = item.id;
-                    row.insertCell(1).textContent = item.name;
-                    row.insertCell(2).textContent = item.quantity;
-                });
-            });
-        }
-
-        function displaySalesAndLosses() {
-            // Fetch sales and losses data from the server/database
-            fetchSalesAndLossesData().then(function (data) {
-                // Display sales and losses data in the table
-                var salesAndLossesTableBody = document.getElementById("salesAndLossesTableBody");
-                clearTable(salesAndLossesTableBody);
-
-                data.forEach(function (entry) {
-                    var row = salesAndLossesTableBody.insertRow();
-                    row.insertCell(0).textContent = entry.date;
-                    row.insertCell(1).textContent = entry.action;
-                    row.insertCell(2).textContent = entry.itemName;
-                    row.insertCell(3).textContent = entry.quantity;
-                    row.insertCell(4).textContent = entry.reason;
-                });
-            });
-        }
-
-      
-function sendData(action, data, successCallback, errorCallback) {
-    // Make an AJAX request to the server
-    fetchDataFromServer(action, data)
-        .then((response) => response.text())
-        .then((response) => {
-            successCallback(response);
-        })
-        .catch((error) => {
-            console.error("Error in sendData:", error);
-            if (errorCallback) {
-                errorCallback(error);
+            if (selectedInventoryItem) {
+                document.getElementById('rowavailableQuantity').value = selectedInventoryItem.quantity;
             }
         });
-}
-        function getValueById(id) {
-            return document.getElementById(id).value;
-        }
 
-        function getSelectedValues(selectId) {
-            var selectedOptions = [];
-            var selectElement = document.getElementById(selectId);
-            for (var option of selectElement.options) {
-                if (option.selected) {
-                    selectedOptions.push(option.value);
-                }
+
+        function addCombination() {
+           
+            var availableQuantity = parseFloat(document.getElementById('rowavailableQuantity').value);
+            var quantity = parseFloat(document.getElementById('rowquantity').value);
+            var combinationN=document.getElementById('combinationName').value;
+            if (!availableQuantity || !quantity || !combinationN) {
+                console.log("Inputs cannot be empty.");
+                return; // Exit the function
+            }else if (availableQuantity < quantity) {
+                alert('The quantity being inserted is greater than the available quantity.');
+                return; // Exit the function
+            }else{
+            document.getElementById('combinationName').disabled = true;
+            document.getElementById('combinationName').readOnly = true;
+            var table = document.getElementById('rawMaterialTableBody');
+            var row = table.insertRow();
+
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+            cell1.innerHTML = combinationN;
+            cell2.innerHTML = document.getElementById('rowItemId').value;
+            cell3.innerHTML = document.getElementById('rowItemId').options[document.getElementById('rowItemId').selectedIndex].text;
+            cell4.innerHTML = quantity;
+         }
+        }
+        function submitCombination() {
+            var cname = document.getElementById('combinationName').value;
+            var table = document.getElementById('rawMaterialTable');
+            var data = [];
+
+            if (table.rows.length < 0) {
+                return;
             }
-            return selectedOptions;
-        }
 
-        function getAvailableQuantity(productId) {
-            // Fetch available quantity from the server/database
-            return fetchDataFromServer("getAvailableQuantity", { productId })
-                .then(function (response) {
-                    return parseInt(response);
+            for (var i = 1, row; row = table.rows[i]; i++) {
+                var name = row.cells[0].innerHTML;
+                var rowid = row.cells[1].innerHTML;
+                var rawMaterial = row.cells[2].innerHTML;
+                var quantity = row.cells[3].innerHTML;
+
+                data.push({
+                    name: name,
+                    rowid: rowid,
+                    rawMaterial: rawMaterial,
+                    quantity: quantity
                 });
-        }
+            }
 
-        function checkIngredientsAvailability(ingredients) {
-            // Check if the available quantity is sufficient for each ingredient
-            return ingredients.every(function (ingredient) {
-                return getAvailableQuantity(ingredient) > 0;
+            sendDatac('addCombination', data, function () {
+                clearCombinationForm();
             });
+
+            document.getElementById('combinationName').disabled = false;
+            document.getElementById('combinationName').readOnly = false;
         }
 
+        function sendDatac(section, data, callback) {
+            console.log('Sending data:', data);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'inventory.php', true);
+
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    console.log('Response:', xhr.responseText);
+                    if (xhr.status == 200) {
+                        try {
+                            var responseData = JSON.parse(xhr.responseText);
+                            console.log('Parsed Response:', responseData);
+                            if (typeof handleResponse === 'function') {
+                                handleResponses(section);
+                            }
+                            if (typeof callback === 'function') {
+                                callback(responseData);
+                            }
+                        } catch (error) {
+                            console.error('Error parsing JSON:', error);
+                            alert('Error parsing JSON');
+                        }
+                    } else {
+                        console.error('Request failed with status:', xhr.status);
+                        alert('Request failed with status: ' + xhr.status);
+                    }
+                }
+            };
+
+            var jsonData = JSON.stringify(data);
+
+            xhr.send(jsonData);
+        }
+
+        function handleResponses(section) {
+            console.log(`Response for section '${section}' handled.`);
+        }
+
+
+    // Function to clear the combination form after submitting data
+    function clearCombinationForm() {
+        document.getElementById('combinationName').value = '';
+        document.getElementById('rowItemId').selectedIndex = 0;
+        document.getElementById('rowavailableQuantity').value = '';
+        document.getElementById('rowquantity').value = '';
+
+        // Clear the raw material table
+        var table = document.getElementById('rawMaterialTableBody');
+        while (table.firstChild) {
+            table.removeChild(table.firstChild);
+        }
+    }
+        // Send the table's data to the server when the submit button is clicked
+        document.getElementById('combinationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var table = document.getElementById('rawMaterialTable');
+            var data = [];
+
+            // Loop through each row in the table
+            for (var i = 1, row; row = table.rows[i]; i++) {
+                // Get the raw material and quantity from the row
+                var combinationN = row.cells[0].innerHTML;
+                var rowid = row.cells[1].innerHTML;
+                var rawMaterial = row.cells[2].innerHTML;
+                var quantity = row.cells[3].innerHTML;
+
+                data.push({
+                    combinationN: combinationN,
+                    rowid: rowid,
+                    rawMaterial: rawMaterial,
+                    quantity: quantity
+                });
+            }
+        });
+
+    function displayInventory() {
+        // Fetch inventory data from the server/database
+        fetchInventoryData().then(function (inventoryData) {
+            // Display inventory data in the table
+            var inventoryTableBody = document.getElementById("inventoryTableBody");
+            clearTable(inventoryTableBody);
+
+            inventoryData.forEach(function (item) {
+                var row = inventoryTableBody.insertRow();
+                row.insertCell(0).textContent = item.id;
+                row.insertCell(1).textContent = item.name;
+                row.insertCell(2).textContent = item.quantity;
+            });
+        });
+    }
+    function displaySalesAndLosses() {
+        // Fetch sales and losses data from the server/database
+        fetchSalesAndLossesData().then(function (data) {
+            // Display sales and losses data in the table
+            var salesAndLossesTableBody = document.getElementById("salesAndLossesTableBody");
+            clearTable(salesAndLossesTableBody);
+
+            data.forEach(function (entry) {
+                var row = salesAndLossesTableBody.insertRow();
+                row.insertCell(0).textContent = entry.date;
+                row.insertCell(1).textContent = entry.action;
+                row.insertCell(2).textContent = entry.item_name;
+                row.insertCell(3).textContent = entry.quantity;
+                row.insertCell(4).textContent = entry.reason;
+                row.insertCell(5).textContent = entry.selling_price;
+            });
+        });
+    }
+    function clearTable(tableBody) {
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+        }
+    }
+
+    function fetchInventoryData() {
+        // Make an AJAX request to the server to fetch inventory data
+        return fetchDataFromServer("getInventoryData", {});
+    }
+
+    function fetchSalesAndLossesData() {
+        // Make an AJAX request to the server to fetch sales and losses data
+        return fetchDataFromServer("getSalesAndLossesData", {});
+    }
+    
+    function fetchData(url, options) {
+        return fetch(url, options)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .catch((error) => {
+                console.error("Fetch Error:", error);
+                throw error; // re-throw the error to be caught by the next catch block
+            });
+    }
+        
+    function fetchDataFromServer(action, data) {
+        // Make an AJAX request to the server
+        return fetchData(`server.php?action=${action}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+    }
     </script>
 </body>
 </html>
