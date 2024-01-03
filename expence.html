@@ -176,7 +176,7 @@
             
         </div>
         <section class="card" style="display: flex; flex-direction: row; align-items: flex-start;">
-            <div style="margin-right: 20px;">
+            <div style="margin-right: 20px; width: 30%;">
                 <h2>Date Interval Expenses</h2>
                 <label for="start-date">Start Date:</label>
                 <input type="date" id="start-date" name="start-date" required>
@@ -200,6 +200,7 @@
             </div>
             <div class="total" id="total-date-interval"style="display: flex; flex-direction: row; align-items: flex-start;"></div>
         </section>
+        
         
     </div>
 
@@ -252,85 +253,86 @@
             xhr.send(data);
         }
         function fetchDateIntervalExpenses() {
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
 
-    if (startDate > endDate) {
-        alert("End date must be greater than start date");
-        return;
-    }
-
-    // Function to create table rows
-    function createTableRow(expense) {
-        return `<tr>
-                    <td>${expense.ExpenseID}</td>
-                    <td>${expense.ExpenseType}</td>
-                    <td>${expense.ExpenseReason}</td>
-                    <td>${expense.ExpenseDate}</td>
-                    <td>${expense.TotalCost}</td>
-                </tr>`;
-    }
-// Function to calculate total cost
-function calculateTotalCost(expenses) {
-    return expenses.reduce((total, expense) => total + parseFloat(expense.TotalCost), 0);
-}
-
-// Your existing code
-fetch(`expencetables.php?startDate=${startDate}&endDate=${endDate}`)
-    .then(response => response.json())
-    .then(data => {
-        const dateIntervalExpenses = data.dateIntervalExpenses;
-
-        // Check if dateIntervalExpenses is an array before updating the table body
-        if (Array.isArray(dateIntervalExpenses)) {
-            // Populate date interval expenses table body
-            const tableBody = document.getElementById('date-interval-table-body');
-            tableBody.innerHTML = dateIntervalExpenses.map(createTableRow).join('');
-
-            // Update the total
-            document.getElementById('total-date-interval').textContent = 'Total: ' + calculateTotalCost(dateIntervalExpenses);
-        } else {
-            console.error('Invalid data received:', data);
+        if (startDate > endDate) {
+            alert("End date must be greater than start date");
+            return;
         }
-    })
-    .catch(error => console.error('Error:', error));
 
-}
+        // Function to create table rows
+        function createTableRow(expense) {
+            return `<tr>
+                        <td>${expense.ExpenseID}</td>
+                        <td>${expense.ExpenseType}</td>
+                        <td>${expense.ExpenseReason}</td>
+                        <td>${expense.ExpenseDate}</td>
+                        <td>${expense.TotalCost}</td>
+                    </tr>`;
+        }
+        // Function to calculate total cost
+        function calculateTotalCost(expenses) {
+            return expenses.reduce((total, expense) => total + parseFloat(expense.TotalCost), 0);
+        }
 
+        // Your existing code
+        fetch(`expencetables.php?startDate=${startDate}&endDate=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                const dateIntervalExpenses = data.dateIntervalExpenses;
 
-        function updateExpenseTypes() {
-            makeAjaxRequest("GET", "expence.php", null, function (response) {
-                console.log(response);
-                if (response.error) {
-                    console.error(response.error);
+                // Check if dateIntervalExpenses is an array before updating the table body
+                if (Array.isArray(dateIntervalExpenses)) {
+                    // Populate date interval expenses table body
+                    const tableBody = document.getElementById('date-interval-table-body');
+                    tableBody.innerHTML = dateIntervalExpenses.map(createTableRow).join('');
+
+                    // Update the total
+                    document.getElementById('total-date-interval').textContent = 'Total: ' + calculateTotalCost(dateIntervalExpenses);
                 } else {
-                    var expenseTypesDropdown = document.getElementById("expense-type");
-                    expenseTypesDropdown.innerHTML = '';
-                    response.expenseTypes.forEach(function (type) {
-                        var option = document.createElement("option");
-                        option.value = type.ExpenseTypeName.toLowerCase();
-                        option.text = type.ExpenseTypeName;
-                        expenseTypesDropdown.appendChild(option);
-                    });
+                    console.error('Invalid data received:', data);
                 }
-            }, function (error) {
-                console.error("Request failed: " + error);
-            });
-        }
+            })
+            .catch(error => console.error('Error:', error));
 
-        function openNav() {
-            document.getElementById("sidebar").style.width = "250px";
-            document.getElementById("main").style.marginLeft = "250px";
-        }
+    }
 
-        function closeNav() {
-            document.getElementById("sidebar").style.width = "0";
-            document.getElementById("main").style.marginLeft = "0";
-        }
+
+            function updateExpenseTypes() {
+                makeAjaxRequest("GET", "expence.php", null, function (response) {
+                    console.log(response);
+                    if (response.error) {
+                        console.error(response.error);
+                    } else {
+                        var expenseTypesDropdown = document.getElementById("expense-type");
+                        expenseTypesDropdown.innerHTML = '';
+                        response.expenseTypes.forEach(function (type) {
+                            var option = document.createElement("option");
+                            option.value = type.ExpenseTypeName.toLowerCase();
+                            option.text = type.ExpenseTypeName;
+                            expenseTypesDropdown.appendChild(option);
+                        });
+                    }
+                }, function (error) {
+                    console.error("Request failed: " + error);
+                });
+            }
+
+            function openNav() {
+                document.getElementById("sidebar").style.width = "250px";
+                document.getElementById("main").style.marginLeft = "250px";
+            }
+
+            function closeNav() {
+                document.getElementById("sidebar").style.width = "0";
+                document.getElementById("main").style.marginLeft = "0";
+            }
 
         updateExpenseTypes();
+        
         function submitforms() {
-            console.log('starting form submittion');
+            fetchExpenses();
             document.getElementById('expense-form').addEventListener('submit', function (event) {
                 event.preventDefault();
                 var expenseType = document.getElementById('expense-type').value;
@@ -340,10 +342,13 @@ fetch(`expencetables.php?startDate=${startDate}&endDate=${endDate}`)
                 xhr.open('POST', 'expence.php', true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 xhr.send('section=expenseSection&expense-type=' + encodeURIComponent(expenseType) + '&expense-reason=' + encodeURIComponent(expenseReason) + '&total-cost=' + encodeURIComponent(totalCost));
+
+                // Call fetchExpenses after the form is submitted
                 fetchExpenses();
             });
-            // fetchExpenses();
+            fetchExpenses();
         }
+
         function fetchExpenses() {
             fetch('expencetables.php')
                 .then(response => response.json())

@@ -14,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Return inventory data for display
     $inventory = getInventory();
     if ($inventory === false) {
-        echo json_encode(array('error' => 'Failed to retrieve inventory.'));
+        echo json_encode(array('status' => 'error', 'message' => 'Failed to retrieve inventory.'));
     } else {
-        echo json_encode($inventory);
+        echo json_encode(array('status' => 'success', 'data' => $inventory));
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle POST requests based on sections
@@ -32,10 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 handleLossesSection();
                 break;
             default:
-                echo json_encode(array('error' => 'Invalid section.'));
+                echo json_encode(array('status' => 'error', 'message' => 'Invalid section.'));
         }
     } else {
-        echo json_encode(array('error' => 'Section not specified.'));
+        echo json_encode(array('status' => 'error', 'message' => 'Section not specified.'));
     }
 }
 
@@ -66,7 +66,11 @@ function handleProductSection() {
     $quantity = (int)$_POST['quantity'];
     $price = (float)$_POST['price'];
 
-    addItem($itemName, $quantity, $price);
+    if (isValidQuantity($quantity) && isValidPrice($price)) {
+        addItem($itemName, $quantity, $price);
+    } else {
+        echo json_encode(array('status' => 'error', 'message' => 'Invalid quantity or price.'));
+    }
 }
 
 function handleLossesSection() {
@@ -75,30 +79,11 @@ function handleLossesSection() {
     $quantityLost = (int)$_POST['quantityLost'];
     $reason = sanitizeInput($_POST['reason']);
 
-    recordLosses($productId, $quantityLost, $reason);
-}
-
-function addItem($itemName, $quantity, $price) {
-    global $conn;
-
-    // Validation checks
-    if ($quantity <= 0 || $price <= 0 ) {
-        echo json_encode(array('error' => 'Invalid quantity, price'));
-        return;
-    }
-
-
-    $sql = "INSERT INTO products (name, quantity, price) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sid", $itemName, $quantity, $price);
-
-    if ($stmt->execute()) {
-        echo json_encode(array('success' => 'Item added successfully.'));
+    if (isValidQuantity($quantityLost)) {
+        recordLosses($productId, $quantityLost, $reason);
     } else {
-        echo json_encode(array('error' => 'Failed to add item.'));
+        echo json_encode(array('status' => 'error', 'message' => 'Invalid quantity for losses.'));
     }
-
-    $stmt->close();
 }
 
 function handleSalesSection() {
@@ -107,58 +92,34 @@ function handleSalesSection() {
     $quantitySold = (int)$_POST['quantitySold'];
     $sellingprice = (float)$_POST['sellingprice'];
 
-    recordSales($productId, $quantitySold, $sellingprice);
-}
-
-function recordSales($productId, $quantitySold, $sellingprice) {
-    global $conn;
-
-    // Check if there is enough quantity to sell
-    $checkQuantity = "SELECT quantity, price FROM products WHERE id = ?";
-    $stmt = $conn->prepare($checkQuantity);
-    $stmt->bind_param("i", $productId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $stmt->close();
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $currentQuantity = $row['quantity'];
-        $currentprice = $row['price'];
-        $currentprice = ceil($currentprice);
-        $roundedsellPrice = ceil($sellingprice);
-
-        if ($currentQuantity >= $quantitySold && $currentprice <= $roundedsellPrice) {
-            // Deduct sold quantity from inventory
-            $newQuantity = $currentQuantity - $quantitySold;
-            $updateQuantity = "UPDATE products SET quantity = ? WHERE id = ?";
-            $stmt = $conn->prepare($updateQuantity);
-            $stmt->bind_param("ii", $newQuantity, $productId);
-            $stmt->execute();
-            $stmt->close();
-
-            // Record the sale
-            $totalPrice = $sellingprice * $quantitySold;
-            $recordSale = "INSERT INTO sales (product_id, quantity_sold, total_price) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($recordSale);
-            $stmt->bind_param("iid", $productId, $quantitySold, $totalPrice);
-
-            if ($stmt->execute()) {
-                echo json_encode(array('success' => 'Sale recorded successfully.'));
-            } else {
-                echo json_encode(array('error' => 'Failed to record sale.'));
-            }
-
-            $stmt->close();
-        } else {
-            echo json_encode(array('error' => 'Insufficient quantity or price for the sale.'));
-        }
+    if (isValidQuantity($quantitySold) && isValidPrice($sellingprice)) {
+        recordSales($productId, $quantitySold, $sellingprice);
     } else {
-        echo json_encode(array('error' => 'Product not found.'));
+        echo json_encode(array('status' => 'error', 'message' => 'Invalid quantity or price for sales.'));
     }
 }
 
+function addItem($itemName, $quantity, $price) {
+    global $conn;
 
+    // Validation checks
+    if ($quantity <= 0 || $price <= 0) {
+        echo json_encode(array('status' => 'error', 'message' => 'Invalid quantity or price'));
+        return;
+    }
+
+    $sql = "INSERT INTO products (name, quantity, price) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sid", $itemName, $quantity, $price);
+
+    if ($stmt->execute()) {
+        echo json_encode(array('status' => 'success', 'message' => 'Item added successfully.'));
+    } else {
+        echo json_encode(array('status' => 'error', 'message' => 'Failed to add item.'));
+    }
+
+    $stmt->close();
+}
 
 function recordLosses($productId, $quantityLost, $reason) {
     global $conn;
@@ -190,25 +151,75 @@ function recordLosses($productId, $quantityLost, $reason) {
             $stmt->bind_param("iis", $productId, $quantityLost, $reason);
 
             if ($stmt->execute()) {
-                echo json_encode(array('success' => 'Loss recorded successfully.'));
+                echo json_encode(array('status' => 'success', 'message' => 'Loss recorded successfully.'));
             } else {
-                echo json_encode(array('error' => 'Failed to record loss.'));
+                echo json_encode(array('status' => 'error', 'message' => 'Failed to record loss.'));
             }
 
             $stmt->close();
         } else {
-            echo json_encode(array('error' => 'Insufficient quantity for the loss.'));
+            echo json_encode(array('status' => 'error', 'message' => 'Insufficient quantity for the loss.'));
         }
     } else {
-        echo json_encode(array('error' => 'Product not found.'));
+        echo json_encode(array('status' => 'error', 'message' => 'Product not found.'));
+    }
+}
+
+function recordSales($productId, $quantitySold, $sellingprice) {
+    global $conn;
+
+    // Check if there is enough quantity to sell
+    $checkQuantity = "SELECT quantity, price FROM products WHERE id = ?";
+    $stmt = $conn->prepare($checkQuantity);
+    $stmt->bind_param("i", $productId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $currentQuantity = $row['quantity'];
+        $currentPrice = $row['price'];
+
+        if ($currentQuantity >= $quantitySold && $currentPrice <= $sellingprice) {
+            // Deduct sold quantity from inventory
+            $newQuantity = $currentQuantity - $quantitySold;
+            $updateQuantity = "UPDATE products SET quantity = ? WHERE id = ?";
+            $stmt = $conn->prepare($updateQuantity);
+            $stmt->bind_param("ii", $newQuantity, $productId);
+            $stmt->execute();
+            $stmt->close();
+
+            // Record the sale
+            $totalPrice = $sellingprice * $quantitySold;
+            $recordSale = "INSERT INTO sales (product_id, quantity_sold, total_price) VALUES (?, ?, ?)";
+            $stmt = $conn->prepare($recordSale);
+            $stmt->bind_param("iid", $productId, $quantitySold, $totalPrice);
+
+            if ($stmt->execute()) {
+                echo json_encode(array('status' => 'success', 'message' => 'Sale recorded successfully.'));
+            } else {
+                echo json_encode(array('status' => 'error', 'message' => 'Failed to record sale.'));
+            }
+
+            $stmt->close();
+        } else {
+            echo json_encode(array('status' => 'error', 'message' => 'Insufficient quantity or price for the sale.'));
+        }
+    } else {
+        echo json_encode(array('status' => 'error', 'message' => 'Product not found.'));
     }
 }
 
 function sanitizeInput($input) {
-    global $conn;
-    $input = trim($input);
-    $input = stripslashes($input);
-    $input = htmlspecialchars($input);
-    return $conn->real_escape_string($input);
+    return htmlspecialchars(strip_tags(trim($input)));
+}
+
+function isValidQuantity($quantity) {
+    return $quantity > 0;
+}
+
+function isValidPrice($price) {
+    return $price > 0;
 }
 ?>

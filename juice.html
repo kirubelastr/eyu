@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>Fruit Sales Inventory Management System</title>
     <style>
@@ -98,145 +97,125 @@
     </div>
   <div id="main">
     <button id="sidebarToggle" onclick="openNav()">☰</button>
-<div class="top-container">
-    <section id="dashboardSection" class="card">
-        <div class="dashboard-container">
-            <h2>juice</h2>
-            <h1>Juice House</h1>
-
-            <h2>Add New Raw Material</h2>
-            <form id="addMaterialForm">
-                <label for="materialName">Name:</label><br>
-                <input type="text" id="materialName" name="materialName"><br>
-                <label for="materialPrice">Price:</label><br>
-                <input type="number" id="materialPrice" name="materialPrice"><br>
-                <label for="materialQuantity">Quantity:</label><br>
-                <input type="number" id="materialQuantity" name="materialQuantity"><br>
-                <input type="submit" value="Add Material">
+    <div id="main">
+        <section id="rawMaterialSection" class="card">
+            <h2>Raw Materials</h2>
+            <form id="rawMaterialForm">
+                <label for="rawMaterialName">Material Name:</label>
+                <input type="text" id="rawMaterialName" required>
+                <label for="rawMaterialQuantity">Quantity:</label>
+                <input type="number" step="0.01" id="rawMaterialQuantity" required>
+                <button type="button" onclick="addRawMaterial()">Add Raw Material</button>
             </form>
+        </section>
+
+        <section id="salesSection" class="card">
+            <h2>Sales</h2>
+            <form id="sellItemForm">
+                <label for="sellItemId">Select Item:</label>
+                <select id="sellItemId"></select>
+                <label for="sellQuantity">Quantity:</label>
+                <input type="number" id="sellQuantity" required>
+                <!-- Display available quantity for sales -->
+                <label for="availableQuantity">Available Quantity:</label>
+                <input type="text" id="availableQuantity" readonly>
+                <button type="button" onclick="sellItem()">Sell Item</button>
+            </form>
+        </section>
+
+        <!-- Modified Losses Section -->
+        <section id="lossesSection" class="card">
+            <h2>Losses Management</h2>
+            <form id="recordLossForm">
+                <label for="lossItemId">Select Item:</label>
+                <select id="lossItemId"></select>
+                <label for="lossQuantity">Quantity:</label>
+                <input type="number" id="lossQuantity" required>
+                <label for="lossReason">Reason:</label>
+                <input type="text" id="lossReason" required>
+                <button type="button" onclick="recordLoss()">Record Loss</button>
+            </form>
+        </section>
+
+        <section id="combinationSection" class="card">
+            <h2>Combinations</h2>
+            <form id="combinationForm">
+                <label for="combinationName">Combination Name:</label>
+                <input type="text" id="combinationName" required>
+                
+                <table id="rawMaterialTable">
+                    <thead>
+                        <tr>
+                            <th>Raw Material</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rawMaterialTableBody">
+                        <!-- Raw material rows will be dynamically added here -->
+                    </tbody>
+                </table>
         
+                <button type="button" onclick="addCombination()">Add Combination</button>
+            </form>
+        </section>
+        
+
+        <section id="inventorySection" class="card">
             <h2>Inventory</h2>
             <table id="inventoryTable">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Price</th>
+                        <th>Material ID</th>
+                        <th>Material Name</th>
                         <th>Quantity</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Inventory data will be inserted here -->
-                </tbody>
+                <tbody id="inventoryTableBody"></tbody>
             </table>
-        
-            <h2>Sell Juice</h2>
-            <form id="sellJuiceForm">
-                <label for="juiceName">Juice:</label><br>
-                <select id="juiceName" name="juiceName">
-                    <!-- Juice options will be inserted here -->
-                </select><br>
-                <label for="juiceQuantity">Quantity:</label><br>
-                <input type="number" id="juiceQuantity" name="juiceQuantity"><br>
-                <input type="submit" value="Sell Juice">
-            </form>
-
-        </div>
-    </section>
-    
-    </div>
-    <div class="b-container">
-        <!-- Your existing sections -->
-
-        <!-- New section for Raw Materials and Combinations -->
-        <section id="juiceHouseSection" class="card">
-            <h2>Juice House Management</h2>
-
-            <!-- Raw Materials Form -->
-            <form id="rawMaterialsForm">
-                <label for="rawMaterialName">Raw Material Name:</label>
-                <input type="text" id="rawMaterialName" required>
-                <label for="rawMaterialQuantity">Quantity:</label>
-                <input type="number" id="rawMaterialQuantity" required>
-                <button type="button" onclick="addRawMaterial()">Add Raw Material</button>
-            </form>
-
-            <!-- Combinations Form -->
-            <form id="combinationsForm">
-                <label for="combinationName">Combination Name:</label>
-                <input type="text" id="combinationName" required>
-                <label for="combinationIngredients">Ingredients:</label>
-                <textarea id="combinationIngredients" required></textarea>
-                <button type="button" onclick="createCombination()">Create Combination</button>
-            </form>
-
-            <!-- Sell Juice and Food Form -->
-            <form id="sellJuiceFoodForm">
-                <label for="sellProduct">Select Product:</label>
-                <select id="sellProduct"></select>
-                <label for="sellProductQuantity">Quantity:</label>
-                <input type="number" id="sellProductQuantity" required>
-                <label for="sellProductPrice">Price:</label>
-                <input type="number" step="0.01" id="sellProductPrice" required>
-                <button type="button" onclick="sellJuiceFood()">Sell Product</button>
-            </form>
         </section>
 
-        <!-- Inventory Section -->
-        <section id="inventorySection" class="card">
-            <div class="container">
-                <h2>Inventory Section</h2>
-                <div id="inventoryOutput" class="output scrollable">
-                    <table id="inventoryTable">
-                        <thead>
-                            <tr>
-                                <th>Item ID</th>
-                                <th>Item Name</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventoryTableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <section id="salesAndLossesSection" class="card">
+            <h2>Sales and Losses Log</h2>
+            <table id="salesAndLossesTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Action</th>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody id="salesAndLossesTableBody"></tbody>
+            </table>
         </section>
     </div>
-</div>
+
+    </div>  
     <script>
-         // Get the current page filename (e.g., "fruit.html")
-         var currentPage = location.pathname.split("/").slice(-1)[0];
+        // Get the current page filename (e.g., "fruit.html")
+        var currentPage = location.pathname.split("/").slice(-1)[0];
 
         // Function to set the background color and disable the link for the current page
         function setCurrentPageStyle() {
-            var fruitLink = document.getElementById("fruitLink");
-            var juiceLink = document.getElementById("juiceLink");
-            var expenceLink = document.getElementById("expenceLink");
-            var expenceLink = document.getElementById("salesLink");
-            var expenceLink = document.getElementById("Dashboardlink");
+            var navLinks = document.querySelectorAll("#sidebar a");
+
             // Reset styles for all links
-            fruitLink.style.backgroundColor = "";
-            fruitLink.style.pointerEvents = "auto";
+            navLinks.forEach(function (link) {
+                link.style.backgroundColor = "";
+                link.style.pointerEvents = "auto";
+            });
 
-            juiceLink.style.backgroundColor = "";
-            juiceLink.style.pointerEvents = "auto";
-
-            expenceLink.style.backgroundColor = "";
-            expenceLink.style.pointerEvents = "auto";
-
-            Dashboardlink.style.backgroundColor = "";
-            Dashboardlink.style.pointerEvents = "auto";
-
-        // Set styles for the current page
+            // Set styles for the current page
             if (currentPage === "juice.html") {
-                juiceLink.style.backgroundColor = "green";
-                juiceLink.style.pointerEvents = "none"; // Disable the link
+                document.getElementById("juiceLink").style.backgroundColor = "green";
+                document.getElementById("juiceLink").style.pointerEvents = "none"; // Disable the link
             }
         }
 
         // Call the function on page load
         setCurrentPageStyle();
+
         function openNav() {
             document.getElementById("sidebar").style.width = "250px";
             document.getElementById("main").style.marginLeft = "250px";
@@ -246,57 +225,289 @@
             document.getElementById("sidebar").style.width = "0";
             document.getElementById("main").style.marginLeft = "0";
         }
-        // Add Raw Material
-        function addRawMaterial() {
-            let name = document.getElementById("rawMaterialName").value;
-            let quantity = document.getElementById("rawMaterialQuantity").value;
+        document.addEventListener("DOMContentLoaded", function () {
+    loadDropdowns();
+    displayInventory();
+    displaySalesAndLosses();
+    addRawMaterialRow(); // Add an initial row for raw materials in the combination form
+});
 
-            $.post("process.php", { action: "addRawMaterial", rawMaterialName: name, rawMaterialQuantity: quantity }, function () {
-                // Refresh or update the UI as needed
-            });
-        }
-
-        // Create Combination
-        function createCombination() {
-            let name = document.getElementById("combinationName").value;
-            let ingredients = document.getElementById("combinationIngredients").value;
-
-            $.post("process.php", { action: "createCombination", combinationName: name, combinationIngredients: ingredients }, function () {
-                // Refresh or update the UI as needed
-            });
-        }
-
-        // Sell Juice/Food
-        function sellJuiceFood() {
-            let productId = document.getElementById("sellProduct").value;
-            let quantity = document.getElementById("sellProductQuantity").value;
-            let price = document.getElementById("sellProductPrice").value;
-
-            $.post("process.php", { action: "sellProduct", sellProduct: productId, sellProductQuantity: quantity, sellProductPrice: price }, function () {
-                // Refresh or update the UI as needed
-            });
-        }
-
-        // Record Loss
-        function recordLoss() {
-            let itemId = document.getElementById("lossItemId").value;
-            let quantity = document.getElementById("lossQuantity").value;
-            let reason = document.getElementById("lossReason").value;
-
-            $.post("process.php", { action: "recordLoss", lossItemId: itemId, lossQuantity: quantity, lossReason: reason }, function () {
-                // Refresh or update the UI as needed
-            });
-        }
-        function loadInventoryTable() {
-            $.get("process.php", function (data) {
-                $("#inventoryTableBody").html(data);
-            });
-        }
-
-        // Call loadInventoryTable function on page load
-        $(document).ready(function () {
-            loadInventoryTable();
+function loadDropdowns() {
+    fetch('server.php?action=getDropdownData')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Dropdown data:", data);
+            // Rest of the code
+        })
+        .catch(error => {
+            console.error('Error fetching dropdown data:', error);
+            console.log('Response:', error.response.text());
         });
+}
+
+
+        function addRawMaterial() {
+    var rawMaterialName = getValueById("rawMaterialName");
+    var rawMaterialQuantity = getValueById("rawMaterialQuantity");
+
+    sendData(
+        "addRawMaterial",
+        { rawMaterialName, rawMaterialQuantity },
+        function (response) {
+            console.log(response);
+            displayInventory();
+            loadDropdowns();
+        },
+        function (error) {
+            console.error("Error adding raw material:", error);
+        }
+    );
+} // Missing closing parenthesis
+
+function addCombination() {
+    var combinationName = getValueById("combinationName");
+    var rawMaterialRows = getRawMaterialRows();
+
+    sendData(
+        "addCombination",
+        { combinationName, rawMaterialRows },
+        function (response) {
+            console.log(response);
+            displayInventory();
+            displaySalesAndLosses();
+            loadDropdowns();
+        }
+    );
+}
+
+function getRawMaterialRows() {
+    var rawMaterialRows = [];
+    var tableRows = document.querySelectorAll("#rawMaterialTableBody tr");
+
+    tableRows.forEach(function (row) {
+        var rawMaterial = {
+            name: row.querySelector(".rawMaterialName").value,
+            quantity: row.querySelector(".rawMaterialQuantity").value
+        };
+        rawMaterialRows.push(rawMaterial);
+    });
+
+    return rawMaterialRows;
+}
+
+function addRawMaterialRow() {
+    var rawMaterialTableBody = document.getElementById("rawMaterialTableBody");
+    var newRow = rawMaterialTableBody.insertRow();
+    var cell1 = newRow.insertCell(0);
+    var cell2 = newRow.insertCell(1);
+
+    cell1.innerHTML = `<input type="text" class="rawMaterialName" required>`;
+    cell2.innerHTML = `<input type="number" step="0.01" class="rawMaterialQuantity" required>`;
+}
+
+
+        function sellItem() {
+            var productId = getValueById("sellItemId");
+            var quantitySold = getValueById("sellQuantity");
+
+            // Check if the available quantity is sufficient for the sale
+            if (getAvailableQuantity(productId) >= quantitySold) {
+                sendData("sellItem", { productId, quantitySold }, function (response) {
+                    console.log(response);
+                    displayInventory();
+                    displaySalesAndLosses();
+                    loadDropdowns();
+                });
+            } else {
+                alert("Insufficient quantity available for sale!");
+            }
+        }
+
+        function recordLoss() {
+            var lossItemId = getValueById("lossItemId");
+            var lossQuantity = getValueById("lossQuantity");
+            var lossReason = getValueById("lossReason");
+
+            // Check if the available quantity is sufficient for the loss
+            if (getAvailableQuantity(lossItemId) >= lossQuantity) {
+                sendData("recordLoss", { lossItemId, lossQuantity, lossReason }, function (response) {
+                    console.log(response);
+                    displayInventory();
+                    displaySalesAndLosses();
+                    loadDropdowns();
+                });
+            } else {
+                alert("Insufficient quantity available for loss!");
+            }
+        }
+
+     // ... (Your existing code)
+
+     function fetchData(url, options) {
+    return fetch(url, options)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .catch((error) => {
+            console.error("Fetch Error:", error);
+            throw error; // re-throw the error to be caught by the next catch block
+        });
+}
+      
+function fetchDataFromServer(action, data) {
+    // Make an AJAX request to the server
+    return fetchData(`server.php?action=${action}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    });
+}
+
+        function fetchInventoryData() {
+            return fetchDataFromServer("getInventoryData", {});
+        }
+
+        function fetchSalesAndLossesData() {
+            return fetchDataFromServer("getSalesAndLossesData", {});
+        }
+
+function updateDropdownOptions(dropdown, data) {
+    if (dropdown) {
+        data.forEach(function (item) {
+            var option = document.createElement("option");
+            option.value = item.id;
+            option.text = item.name;
+            dropdown.add(option);
+        });
+    }
+}
+
+function updateDropdown(dropdownId, data) {
+    var dropdown = document.getElementById(dropdownId);
+
+    // Clear existing options before updating
+    clearDropdownOptions(dropdown);
+
+    // Add a placeholder option
+    var placeholderOption = document.createElement("option");
+    placeholderOption.text = "Please select an item";
+    placeholderOption.value = "";
+    dropdown.add(placeholderOption, 0);
+
+    // Update the dropdown options
+    updateDropdownOptions(dropdown, data);
+}
+
+        function clearTable(tableBody) {
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+        }
+
+        function clearDropdownOptions(dropdown) {
+            while (dropdown.options.length > 0) {
+                dropdown.remove(0);
+            }
+        }
+
+        function updateDropdownOptions(dropdown, data) {
+            data.forEach(function (item) {
+                var option = document.createElement("option");
+                option.value = item.id;
+                option.text = item.name;
+                dropdown.add(option);
+            });
+        }
+
+        function displayInventory() {
+            // Fetch inventory data from the server/database
+            fetchInventoryData().then(function (inventoryData) {
+                // Display inventory data in the table
+                var inventoryTableBody = document.getElementById("inventoryTableBody");
+                clearTable(inventoryTableBody);
+
+                inventoryData.forEach(function (item) {
+                    var row = inventoryTableBody.insertRow();
+                    row.insertCell(0).textContent = item.id;
+                    row.insertCell(1).textContent = item.name;
+                    row.insertCell(2).textContent = item.quantity;
+                });
+            });
+        }
+
+        function displaySalesAndLosses() {
+            // Fetch sales and losses data from the server/database
+            fetchSalesAndLossesData().then(function (data) {
+                // Display sales and losses data in the table
+                var salesAndLossesTableBody = document.getElementById("salesAndLossesTableBody");
+                clearTable(salesAndLossesTableBody);
+
+                data.forEach(function (entry) {
+                    var row = salesAndLossesTableBody.insertRow();
+                    row.insertCell(0).textContent = entry.date;
+                    row.insertCell(1).textContent = entry.action;
+                    row.insertCell(2).textContent = entry.itemName;
+                    row.insertCell(3).textContent = entry.quantity;
+                    row.insertCell(4).textContent = entry.reason;
+                });
+            });
+        }
+
+      
+function sendData(action, data, successCallback, errorCallback) {
+    // Make an AJAX request to the server
+    fetchDataFromServer(action, data)
+        .then((response) => response.text())
+        .then((response) => {
+            successCallback(response);
+        })
+        .catch((error) => {
+            console.error("Error in sendData:", error);
+            if (errorCallback) {
+                errorCallback(error);
+            }
+        });
+}
+        function getValueById(id) {
+            return document.getElementById(id).value;
+        }
+
+        function getSelectedValues(selectId) {
+            var selectedOptions = [];
+            var selectElement = document.getElementById(selectId);
+            for (var option of selectElement.options) {
+                if (option.selected) {
+                    selectedOptions.push(option.value);
+                }
+            }
+            return selectedOptions;
+        }
+
+        function getAvailableQuantity(productId) {
+            // Fetch available quantity from the server/database
+            return fetchDataFromServer("getAvailableQuantity", { productId })
+                .then(function (response) {
+                    return parseInt(response);
+                });
+        }
+
+        function checkIngredientsAvailability(ingredients) {
+            // Check if the available quantity is sufficient for each ingredient
+            return ingredients.every(function (ingredient) {
+                return getAvailableQuantity(ingredient) > 0;
+            });
+        }
+
     </script>
 </body>
 </html>

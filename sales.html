@@ -115,6 +115,10 @@
             position: absolute;
             right: 100;
         }
+        #totalSalesj {
+            position: absolute;
+            right: 100;
+        }
 
     </style>
 </head>
@@ -163,6 +167,28 @@
             <section class="card">
                 <div>
                     <h2>sales juice</h2>
+                    <div class="dropdown">
+                        <label for="salesFilterj">Select Filter:</label>
+                        <select id="salesFilterj" onchange="updateSalesDataj()">
+                            <option value="monthlyj" selected>Monthly</option>
+                            <option value="dailyj">Daily</option>
+                            <option value="weeklyj">Weekly</option>
+                        </select>
+                    </div>
+                    <table id="salesTablej">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity Sold</th>
+                                <th>Total Sales</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesBodyj">
+                            <!-- Sales data will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                    <div id="totalSalesj"></div>
                 </div>
             </section>
         </div>
@@ -317,9 +343,119 @@ function updateSalesData() {
     var filter = document.getElementById('salesFilter').value;
     fetchSalesData(filter);
 }
+function updateSalesjuiceData(filterj) {
+    var filter = document.getElementById('salesFilterj').value;
+
+    fetch('salesj.php?filter=' + filter)
+    .then(response => response.json())
+    .then(data => {
+        console.log('Data received from server:', data);
+
+        var salesBody = document.getElementById('salesBodyj');
+        salesBody.innerHTML = '';
+
+            document.getElementById('totalSalesj').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_price), 0).toFixed(2);
+
+            data.forEach(row => {
+                var tr = document.createElement('tr');
+                var tdProduct = document.createElement('td');
+                tdProduct.textContent = row.product_name;
+                tr.appendChild(tdProduct);
+                var tdQuantitySold = document.createElement('td');
+                tdQuantitySold.textContent = row.quantity_sold;
+                tr.appendChild(tdQuantitySold);
+                var tdTotalSalesj = document.createElement('td');
+                tdTotalSalesj.textContent = row.total_price;
+                tr.appendChild(tdTotalSalesj);
+                var tdAction = document.createElement('td');
+                var editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = function() {
+                    editSalesDataJuice(row.id);
+                };
+                tdAction.appendChild(editButton);
+                var deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = function() {
+                    deleteSalesDataJuice(row.id);
+                };
+                tdAction.appendChild(deleteButton);
+                tr.appendChild(tdAction);
+                salesBody.appendChild(tr);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function editSalesDataJuice(id) {
+    var newQuantitySoldj = prompt('Enter the new quantity sold:');
+    var newTotalSalesj = prompt('Enter the new total sales:');
+
+    fetch('salesj.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'edit',
+            id: id,
+            quantity_sold: newQuantitySoldj,
+            total_sales: newTotalSalesj,
+            filter: document.getElementById('salesFilterj').value,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Failed to edit sales data: ' + data.error);
+        } else {
+            juiceupdateSalesTable(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    });
+}
+
+function deleteSalesDataJuice(id) {
+    fetch('salesj.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'delete',
+            id: id,
+            filter: document.getElementById('salesFilterj').value,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Failed to delete sales data: ' + data.error);
+        } else {
+            juiceupdateSalesTable(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    });
+}
+
+function juiceupdateSalesTable(data) {
+    updateSalesDataj();
+}
+
+function updateSalesDataj() {
+    var filterj = document.getElementById('salesFilterj').value;
+    updateSalesjuiceData(filterj);
+}
 
 window.onload = function() {
     updateSalesData();
+    updateSalesDataj();
 };
     </script>
 </body>

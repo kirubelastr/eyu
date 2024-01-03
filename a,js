@@ -1,0 +1,289 @@
+
+document.addEventListener("DOMContentLoaded", function () {
+    loadDropdowns();
+    displayInventory();
+    displaySalesAndLosses();
+});
+
+        function loadDropdowns() {
+            // Load items into the combination, sell item, and loss item dropdowns
+            fetchInventoryData().then(
+                function (inventoryData) {
+                    updateDropdown("combinationIngredients", inventoryData);
+                    updateDropdown("sellItemId", inventoryData);
+                    updateDropdown("lossItemId", inventoryData);
+                },
+                function (error) {
+                    console.error("Error loading dropdowns:", error);
+                }
+            );
+        }
+        function addRawMaterial() {
+    var rawMaterialName = getValueById("rawMaterialName");
+    var rawMaterialQuantity = getValueById("rawMaterialQuantity");
+
+    sendData(
+        "addRawMaterial",
+        { rawMaterialName, rawMaterialQuantity },
+        function (response) {
+            console.log(response);
+            displayInventory();
+            loadDropdowns();
+        },
+        function (error) {
+            console.error("Error adding raw material:", error);
+        }
+    );
+}
+        function addCombination() {
+            var combinationName = getValueById("combinationName");
+            var combinationIngredients = getSelectedValues("combinationIngredients");
+
+            // Check if the available quantity is sufficient for creating the combination
+            if (checkIngredientsAvailability(combinationIngredients)) {
+                sendData(
+                    "addCombination",
+                    { combinationName, combinationIngredients },
+                    function (response) {
+                        console.log(response);
+                        displayInventory();
+                        displaySalesAndLosses();
+                        loadDropdowns();
+                    }
+                );
+            } else {
+                alert("Insufficient quantity available for combination!");
+            }
+        }
+
+        function sellItem() {
+            var combinationId = getValueById("sellItemId");
+            var quantitySold = getValueById("sellQuantity");
+
+            // Check if the available quantity is sufficient for the sale
+            if (getAvailableQuantity(combinationId) >= quantitySold) {
+                // Proceed with the sale logic for combinations
+                sendData("sellCombination", { combinationId, quantitySold }, function (response) {
+                    console.log(response);
+                    displayInventory();
+                    displaySalesAndLosses();
+                    loadDropdowns();
+                });
+            } else {
+                alert("Insufficient quantity available for sale!");
+            }
+        }
+    async function getMaxSellableQuantity(productId) {
+        // Fetch combination details for the product
+        var combinationDetails = await fetchDataFromServer("getCombinationDetails", { productId });
+
+        // If there are combinations, calculate the maximum sellable quantity based on raw material quantities
+        if (combinationDetails.length > 0) {
+            var maxSellableQuantity = Infinity;
+            for (var combination of combinationDetails) {
+                var ingredientId = combination.ingredientId;
+                var ingredientQuantity = combination.quantity;
+
+                // Calculate available quantity for each ingredient
+                var availableQuantity = await getAvailableQuantity(ingredientId);
+
+                // Calculate the maximum sellable quantity based on the available raw material quantity
+                var ingredientMaxSellableQuantity = Math.floor(availableQuantity / ingredientQuantity);
+                
+                // Update the overall maximum sellable quantity
+                maxSellableQuantity = Math.min(maxSellableQuantity, ingredientMaxSellableQuantity);
+            }
+            return maxSellableQuantity;
+        } else {
+            // If there are no combinations, return the available quantity directly
+            return getAvailableQuantity(productId);
+        }
+    }
+
+
+        function recordLoss() {
+            var lossItemId = getValueById("lossItemId");
+            var lossQuantity = getValueById("lossQuantity");
+            var lossReason = getValueById("lossReason");
+
+            // Check if the available quantity is sufficient for the loss
+            if (getAvailableQuantity(lossItemId) >= lossQuantity) {
+                sendData("recordLoss", { lossItemId, lossQuantity, lossReason }, function (response) {
+                    console.log(response);
+                    displayInventory();
+                    displaySalesAndLosses();
+                    loadDropdowns();
+                });
+            } else {
+                alert("Insufficient quantity available for loss!");
+            }
+        }
+
+     // ... (Your existing code)
+     function handleErrorResponse(response) {
+    try {
+        var errorData = JSON.parse(response);
+        alert('Error: ' + errorData.error);
+    } catch (error) {
+        console.error('Error parsing JSON response:', error);
+        alert('Unexpected error occurred.');
+    }
+}
+function fetchDataFromServer(action, data) {
+        // Make an AJAX request to the server
+        return fetchData(`server.php?action=${action}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+    }
+function fetchData(url, options) {
+    return fetch(url, options)
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then((responseText) => {
+            console.log('Response Text:', responseText); // Log the response text for debugging
+            try {
+                return JSON.parse(responseText);
+            } catch (error) {
+                console.error('Error parsing JSON response:', error);
+                throw new Error('Unexpected response format.');
+            }
+        })
+        .catch((error) => {
+            console.error('Fetch Error:', error);
+            handleErrorResponse(error.message);
+            throw error; // re-throw the error to be caught by the next catch block
+        });
+}
+
+
+        function fetchInventoryData() {
+            return fetchDataFromServer("getInventoryData", {});
+        }
+
+        function fetchSalesAndLossesData() {
+            return fetchDataFromServer("getSalesAndLossesData", {});
+        }
+
+        function updateDropdown(dropdownId, data) {
+            var dropdown = document.getElementById(dropdownId);
+
+            // Clear existing options before updating
+            clearDropdownOptions(dropdown);
+
+            // Add a placeholder option
+            var placeholderOption = document.createElement("option");
+            placeholderOption.text = "Please select an item";
+            placeholderOption.value = "";
+            dropdown.add(placeholderOption, 0);
+
+            // Update the dropdown options
+            updateDropdownOptions(dropdown, data);
+        }
+
+        function clearTable(tableBody) {
+            while (tableBody.firstChild) {
+                tableBody.removeChild(tableBody.firstChild);
+            }
+        }
+
+        function clearDropdownOptions(dropdown) {
+            while (dropdown.options.length > 0) {
+                dropdown.remove(0);
+            }
+        }
+
+        function updateDropdownOptions(dropdown, data) {
+            data.forEach(function (item) {
+                var option = document.createElement("option");
+                option.value = item.id;
+                option.text = item.name;
+                dropdown.add(option);
+            });
+        }
+
+        function displayInventory() {
+            // Fetch inventory data from the server/database
+            fetchInventoryData().then(function (inventoryData) {
+                // Display inventory data in the table
+                var inventoryTableBody = document.getElementById("inventoryTableBody");
+                clearTable(inventoryTableBody);
+
+                inventoryData.forEach(function (item) {
+                    var row = inventoryTableBody.insertRow();
+                    row.insertCell(0).textContent = item.id;
+                    row.insertCell(1).textContent = item.name;
+                    row.insertCell(2).textContent = item.quantity;
+                });
+            });
+        }
+
+        function displaySalesAndLosses() {
+            // Fetch sales and losses data from the server/database
+            fetchSalesAndLossesData().then(function (data) {
+                // Display sales and losses data in the table
+                var salesAndLossesTableBody = document.getElementById("salesAndLossesTableBody");
+                clearTable(salesAndLossesTableBody);
+
+                data.forEach(function (entry) {
+                    var row = salesAndLossesTableBody.insertRow();
+                    row.insertCell(0).textContent = entry.date;
+                    row.insertCell(1).textContent = entry.action;
+                    row.insertCell(2).textContent = entry.itemName;
+                    row.insertCell(3).textContent = entry.quantity;
+                    row.insertCell(4).textContent = entry.reason;
+                });
+            });
+        }
+
+      
+function sendData(action, data, successCallback, errorCallback) {
+    // Make an AJAX request to the server
+    fetchDataFromServer(action, data)
+        .then((response) => response.text())
+        .then((response) => {
+            successCallback(response);
+        })
+        .catch((error) => {
+            console.error("Error in sendData:", error);
+            if (errorCallback) {
+                errorCallback(error);
+            }
+        });
+}
+        function getValueById(id) {
+            return document.getElementById(id).value;
+        }
+
+        function getSelectedValues(selectId) {
+            var selectedOptions = [];
+            var selectElement = document.getElementById(selectId);
+            for (var option of selectElement.options) {
+                if (option.selected) {
+                    selectedOptions.push(option.value);
+                }
+            }
+            return selectedOptions;
+        }
+
+        function getAvailableQuantity(productId) {
+            // Fetch available quantity from the server/database
+            return fetchDataFromServer("getAvailableQuantity", { productId })
+                .then(function (response) {
+                    return parseInt(response);
+                });
+        }
+
+        function checkIngredientsAvailability(ingredients) {
+            // Check if the available quantity is sufficient for each ingredient
+            return ingredients.every(function (ingredient) {
+                return getAvailableQuantity(ingredient) > 0;
+            });
+        }

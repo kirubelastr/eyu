@@ -45,18 +45,15 @@ function closeNav() {
 }
 function addItem() {
     // Get values from the form
+    console.log("add item called");
     var itemName = getValueById('itemName');
     var quantity = getValueById('quantity');
     var price = getValueById('price');
-
-    // Validate the values (add more validation as needed)
-
-    // Send the data to the server/database to add the item
-    // After successful addition, refresh the displayed inventory, chart, and update summary
     sendData('productSection', { itemName, quantity, price }, function () {
         displayInventory();
         loadDropdowns(); // Refresh dropdowns after adding items
     });
+    console.log("add item called ended");
 }
 
 function sellItem() {
@@ -68,6 +65,49 @@ function sellItem() {
         displayInventory();
         resetForms();  // Call the function to reset the form
     });
+}
+
+function sendData(section, data, callback) {
+    console.log('Sending data 1:', data);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'backend.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencode');
+
+    // Log the data being sent
+    console.log('Sending data:', data);
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log('Response:', xhr.responseText); // Log the response
+            if (xhr.status == 200) {
+                // Handle the response
+                try {
+                    var responseData = JSON.parse(xhr.responseText);
+                    console.log('Parsed Response:', responseData);
+                    // Update relevant sections based on response
+                    handleResponse(section);
+                    // Invoke the callback if provided
+                    if (typeof callback === 'function') {
+                        callback(responseData);
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    alert('Error parsing JSON');
+                }
+            } else {
+                console.error('Request failed with status:', xhr.status);
+                alert('Request failed with status: ' + xhr.status);
+            }
+        }
+    };
+
+    var encodedData = encodeData(data);
+
+    // Log the encoded data
+    console.log('Encoded Data:', encodedData);
+
+    xhr.send('section=' + section + '&' + encodedData);
 }
 
 function resetForms() {
@@ -212,34 +252,6 @@ function clearDropdownOptions(dropdown) {
     // Clear existing options in the dropdown
     dropdown.innerHTML = '';
 }
-
-function sendData(section, data, callback) {
-    // Send data to the server
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'backend.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-                // Handle the response
-                console.log(xhr.responseText);
-                alert(xhr.responseText+'!');
-                // Update relevant sections based on response
-                handleResponse(section);
-                // Invoke the callback if provided
-                if (typeof callback === 'function') {
-                    callback();
-                }
-            } else {
-                alert('Request failed with status: ' + xhr.status);
-            }
-        }
-    };
-    var encodedData = encodeData(data);
-    xhr.send('section=' + section + '&' + encodedData);
-}
-
-
 function encodeData(data) {
     // Encode data for sending in a POST request
     return Object.keys(data)
@@ -257,8 +269,12 @@ function handleResponse(section) {
             loadDropdowns(); // Refresh dropdowns after adding items
             break;
         case 'salesSection':
+            displayInventory();
+            loadDropdowns(); // Refresh dropdowns after adding items
+            break;
         case 'lossesSection':
             displayInventory(); // Refresh inventory after sales or losses
+            loadDropdowns(); 
             break;
     }
 }
