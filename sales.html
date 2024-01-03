@@ -66,14 +66,16 @@
         }
 
         .card {
+            width: 80%;
             background-color: #fff;
             padding: 60px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, .1);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .form-container {
+
             flex: 1;
             margin-right: 20px;
         }
@@ -83,19 +85,26 @@
         }
 
         table {
-            border-collapse: collapse;
+            border-collapse: inherit;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 5px;
         }
 
-        th, td {
+        th {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            height: 40px; /* Adjust this height to your preference */
+        }
+        
 
         th {
-            background-color: #f2f2f2;
+            background-color: #eda4a4;
         }
 
         tr:hover {
@@ -119,7 +128,10 @@
             position: absolute;
             right: 100;
         }
-
+        .scrollable {
+            overflow-y: auto;
+            height: 50px; /* Adjust this height to suit your needs */
+        }
     </style>
 </head>
 
@@ -135,8 +147,8 @@
     <div id="main">
         <button id="sidebarToggle" onclick="openNav()">☰</button>
         <div class="top-container">
-            <section id="dashboardSection" class="card">
-                <div class="dashboard-container">
+            <section class="card">
+                <div>
                     <h2>sales fruit</h2>
                     <div class="dropdown">
                         <label for="salesFilter">Select Filter:</label>
@@ -146,7 +158,7 @@
                             <option value="weekly">Weekly</option>
                         </select>
                     </div>
-                    <table id="salesTable">
+                    <table id="salesTable" >
                         <thead>
                             <tr>
                                 <th>Product</th>
@@ -155,7 +167,7 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="salesBody">
+                        <tbody id="salesBody"class="scrollable">
                             <!-- Sales data will be dynamically inserted here -->
                         </tbody>
                     </table>
@@ -184,7 +196,7 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="salesBodyj">
+                        <tbody id="salesBodyj"class="scrollable">
                             <!-- Sales data will be dynamically inserted here -->
                         </tbody>
                     </table>

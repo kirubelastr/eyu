@@ -252,23 +252,22 @@ function loadDropdowns() {
 
 
         function addRawMaterial() {
-    var rawMaterialName = getValueById("rawMaterialName");
-    var rawMaterialQuantity = getValueById("rawMaterialQuantity");
+            var rawMaterialName = getValueById("rawMaterialName");
+            var rawMaterialQuantity = getValueById("rawMaterialQuantity");
 
-    sendData(
-        "addRawMaterial",
-        { rawMaterialName, rawMaterialQuantity },
-        function (response) {
-            console.log(response);
-            displayInventory();
-            loadDropdowns();
-        },
-        function (error) {
-            console.error("Error adding raw material:", error);
-        }
-    );
-} // Missing closing parenthesis
-
+            sendData(
+                "addRawMaterial",
+                { rawMaterialName, rawMaterialQuantity },
+                function (response) {
+                    console.log(response);
+                    displayInventory();
+                    loadDropdowns();
+                },
+                function (error) {
+                    console.log("Error adding raw material:", error);
+                }
+            );
+        } 
 function addCombination() {
     var combinationName = getValueById("combinationName");
     var rawMaterialRows = getRawMaterialRows();
