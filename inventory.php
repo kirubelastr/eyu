@@ -43,12 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $rowids = [];
         $rawMaterials = [];
         $quantities = [];
+        $price = [];
 
         foreach ($data as $item) {
-            if (is_array($item) && isset($item['name'], $item['rowid'], $item['rawMaterial'], $item['quantity'])) {
+            if (is_array($item) && isset($item['name'], $item['rowid'], $item['rawMaterial'], $item['quantity'], $item['price'])) {
                 $rowids[] = mysqli_real_escape_string($conn, $item['rowid']);
                 $rawMaterials[] = mysqli_real_escape_string($conn, $item['rawMaterial']);
                 $quantities[] = floatval($item['quantity']);
+                $price[] = floatval($item['price']);
             } else {
                 echo json_encode(["error" => "Invalid data structure received"]);
                 exit();
@@ -58,15 +60,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $rowidsStr = implode(",", $rowids);
         $rawMaterialsStr = implode(",", $rawMaterials);
         $quantitiesStr = implode(",", $quantities);
+        $priceStr = implode(",", $price);
 
-        $sql = "INSERT INTO combinations (name, rowID, rawMaterial, quantity) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO combinations (name, rowID, rawMaterial, quantity ,price) VALUES (?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
             die('prepare() failed: ' . htmlspecialchars($conn->error));
         }
 
-        $rc = $stmt->bind_param("ssss", $combinationName, $rowidsStr, $rawMaterialsStr, $quantitiesStr);
+        $rc = $stmt->bind_param("sssss", $combinationName, $rowidsStr, $rawMaterialsStr, $quantitiesStr, $priceStr);
         if ($rc === false) {
             die('bind_param() failed: ' . htmlspecialchars($stmt->error));
         }

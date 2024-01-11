@@ -107,8 +107,11 @@ function addItem($itemName, $quantity, $price) {
         echo json_encode(array('status' => 'error', 'message' => 'Invalid quantity or price'));
         return;
     }
-
     $sql = "INSERT INTO products (name, quantity, price) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sid", $itemName, $quantity, $price);
+    
+    $sql = "INSERT INTO product_inventory (name, quantity, price) VALUES (?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sid", $itemName, $quantity, $price);
 
@@ -191,7 +194,7 @@ function recordSales($productId, $quantitySold, $sellingprice) {
             $stmt->close();
 
             // Record the sale
-            $totalPrice = $sellingprice * $quantitySold;
+            $totalPrice = $sellingprice;
             $recordSale = "INSERT INTO sales (product_id, quantity_sold, total_price) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($recordSale);
             $stmt->bind_param("iid", $productId, $quantitySold, $totalPrice);

@@ -22,8 +22,32 @@ switch ($action) {
     case 'getSalesAndLossesData':
         getSalesAndLossesData();
         break;
+    case 'getCombinationData':
+        getCombinationData();
+        break;
     default:
         echo json_encode(["error" => "Invalid action!"]);
+}
+
+// Function to get combination data
+function getCombinationData() {
+    global $conn;
+
+    // Implement your logic to retrieve the combination data
+
+    // Example SQL query (modify according to your database structure)
+    $sql = "SELECT * FROM combinations";
+    $result = $conn->query($sql);
+
+    $data = array();
+
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    }
+
+    echo json_encode($data);
 }
 
 // Function to get inventory data

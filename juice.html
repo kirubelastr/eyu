@@ -8,7 +8,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>Fruit Sales Inventory Management System</title>
     <style>
-        body {
+       body {
             margin: 0;
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -56,12 +56,13 @@
             transition: margin-left .5s;
             padding: 16px;
         }
-        Table {
+
+        table {
             width: 100%;
             margin-top: 20px;
         }
 
-        th,td {
+        th, td {
             padding: 10px;
             text-align: center;
         }
@@ -69,6 +70,18 @@
         th {
             background-color: #333;
             color: white;
+        }
+
+        tbody {
+            display: block;
+            height: 300px; /* Adjust as needed */
+            overflow-y: auto;
+        }
+
+        table thead, table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         tbody tr:nth-child(even) {
@@ -83,6 +96,7 @@
             max-height: 200px;
             overflow-y: auto;
         }
+
     </style>
 </head>
 
@@ -124,8 +138,6 @@
                 <input type="number" id="maxQuantity" readonly>
                 <label for="sellQuantity">Quantity:</label>
                 <input type="number" id="sellQuantity" required>  
-                <label for="sellingprice">selling price:</label>
-                <input type="number" id="sellingprice" required>
                 <button type="submit" onclick="sellItem()">Sell Item</button>
             </form>
         </section>
@@ -148,6 +160,21 @@
             </form>
         </section>
         </div>
+        <section id="combinationtable" class="card">
+            <table id="combinationTable">
+                <thead>
+                    <tr>
+                        <th>combination name</th>
+                        <th>Row Materials</th>
+                        <th>Row Materials Quantity</th>
+                        <th>row materials selling price</th>
+                    </tr>
+                </thead>
+                <tbody id="combinationTablebody">
+                    <!-- Raw material rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </section>
 
         <section id="combinationSection" class="card">
             <h2>Combinations</h2>
@@ -158,10 +185,14 @@
                 <select id="rowItemId">
                     <option value="" disabled selected hidden>Select a raw material</option>
                 </select>
-                <label for="rowavailableQuantity">available row material quantity:</label>
+                <label for="rowavailableQuantity">Selected available row material quantity:</label>
                 <input type="text" id="rowavailableQuantity" readonly>
-                <label for="rowquantity">Select row matrial quantity:</label>
-                <input type="number" step="0.01" id="rowquantity" required>
+                <label for="rowstockprice">Selected row matrial stock price:</label>
+                <input type="number" step="0.01" id="rowstockprice" readonly>
+                <label for="rowquantity">input row-material quantity:</label>
+                <input type="number" step="0.01" id="rowquantity" >
+                <label for="rowsellingprice">input row-material selling price:</label>
+                <input type="number" step="0.01" id="rowsellingprice" >
                 <button type="submit" onclick="addCombination()">Add Combination</button>
             </form>
              
@@ -172,9 +203,10 @@
                         <th>Row id</th>
                         <th>Row Material</th>
                         <th>Quantity</th>
+                        <th>price</th>
                     </tr>
                 </thead>
-                <tbody id="rawMaterialTableBody">
+                <tbody id="rawMaterialTableBody" style="height: 0; overflow-y: auto;">
                     <!-- Raw material rows will be dynamically added here -->
                 </tbody>
             </table>
@@ -190,6 +222,8 @@
                         <th>Material ID</th>
                         <th>Material Name</th>
                         <th>Quantity</th>
+                        <th>price</th>
+                        <th>total</th>
                     </tr>
                 </thead>
                 <tbody id="inventoryTableBody"></tbody>
@@ -255,6 +289,7 @@
             displaySalesAndLosses();
             loadCombinations();
             loadLossesDropdown();
+            displaycombinations();
 
         // Update the available quantity when the selected option changes
         document.getElementById('lossItemId').addEventListener('change', updateAvalQuantity);
@@ -269,58 +304,61 @@
             if (!itemName || !quantity || !price) {
                 console.log("Inputs cannot be empty.");
                 return; // Exit the function
-            }
-            sendData('addRawMaterial', { itemName, quantity, price }, function () {
+            }else{
+                sendData('addRawMaterial', { itemName, quantity, price }, function () {
                 displayInventory();
             });
 
             console.log("add item called ended");
+            }
+            
         }
-
         function sendData(section, data, callback) {
-            console.log('Sending data:', data);
+    console.log('Sending data:', data);
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'test.php', true);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'test.php', true);
 
-            // Set the content type to application/x-www-form-urlencoded
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    // Set the content type to application/x-www-form-urlencoded
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4) {
-                    console.log('Response:', xhr.responseText);
-                    if (xhr.status == 200) {
-                        try {
-                            var responseData = JSON.parse(xhr.responseText);
-                            console.log('Parsed Response:', responseData);
-                            // Check if handleResponse function exists before calling it
-                            if (typeof handleResponse === 'function') {
-                                handleResponse(section);
-                            }
-                            if (typeof callback === 'function') {
-                                callback(responseData);
-                            }
-                        } catch (error) {
-                            console.error('Error parsing JSON:', error);
-                            alert('Error parsing JSON');
-                        }
-                    } else {
-                        console.error('Request failed with status:', xhr.status);
-                        alert('Request failed with status: ' + xhr.status);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            console.log('Response:', xhr.responseText);
+            if (xhr.status == 200) {
+                try {
+                    var responseData = JSON.parse(xhr.responseText);
+                    console.log('Parsed Response:', responseData);
+                    alert('Server Response: ' + xhr.responseText); // Display server response
+                    // Check if handleResponse function exists before calling it
+                    if (typeof handleResponse === 'function') {
+                        handleResponse(section);
                     }
+                    if (typeof callback === 'function') {
+                        callback(responseData);
+                    }
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    alert('Error parsing JSON');
                 }
-            };
-
-            // Convert the data object to a URL-encoded string
-            var encodedData = encodeData(data);
-
-            xhr.send(encodedData);
+            } else {
+                console.error('Request failed with status:', xhr.status);
+                alert('Request failed with status: ' + xhr.status);
+            }
         }
+    };
 
-        function handleResponse(section) {
-            // You can customize this function based on your needs
-            console.log(`Response for section '${section}' handled.`);
-        }
+    // Convert the data object to a URL-encoded string
+    var encodedData = encodeData(data);
+
+    xhr.send(encodedData);
+}
+
+function handleResponse(section) {
+    // You can customize this function based on your needs
+    console.log(`Response for section '${section}' handled.`);
+    alert(`Response for section '${section}' handled.`);
+}
 
         function encodeData(data) {
             return Object.keys(data).map(function (key) {
@@ -367,22 +405,19 @@
             
             var combinationId = document.getElementById('sellItemId').value;
             var quantity = document.getElementById('sellQuantity').value;
-            var sellingPrice = document.getElementById('sellingprice').value;
             var maxq = document.getElementById('maxQuantity').value;
             console.log(combinationId+quantity);
-            if (!combinationId || !quantity || !sellingPrice || !maxq ) {
-                console.log("Inputs cannot be empty.");
+            if (!combinationId || !quantity || !maxq ) {
+                alert("Inputs cannot be empty.");
                 return; // Exit the function
-            }
-            if (maxq < quantity) {
+            } else if (quantity > maxq) {
                 alert('The quantity being inserted is greater than the available quantity.');
                 return; // Exit the function
-            }else{
+            } else {
                 console.log('trying:');
                 var data = {
                     combinationId: combinationId,
-                    quantity: quantity,
-                    sellingPrice: sellingPrice
+                    quantity: quantity
                 };
                 console.log('Sending data:', data);
                 sendDatas('sellItem', data, function (responseData) {
@@ -429,7 +464,8 @@
         var jsonData = JSON.stringify(data);
 
         xhr.send(jsonData);
-    }/////////////////////////////////////////////////////
+    }
+/////////////////////////////////////////////////////
 // Define the loadLossesDropdown function first
 
 function loadLossesDropdown() {
@@ -576,37 +612,63 @@ function sendDatal(section, data, callback) {
 
             if (selectedInventoryItem) {
                 document.getElementById('rowavailableQuantity').value = selectedInventoryItem.quantity;
+                document.getElementById('rowstockprice').value = selectedInventoryItem.price;
             }
         });
-
-
         function addCombination() {
-           
             var availableQuantity = parseFloat(document.getElementById('rowavailableQuantity').value);
             var quantity = parseFloat(document.getElementById('rowquantity').value);
-            var combinationN=document.getElementById('combinationName').value;
-            if (!availableQuantity || !quantity || !combinationN) {
+            var combinationN = document.getElementById('combinationName').value;
+            var rowsellingprice = parseFloat(document.getElementById('rowsellingprice').value);
+            var rowstockprice = parseFloat(document.getElementById('rowstockprice').value);
+            if (!availableQuantity || !quantity || !combinationN || !rowsellingprice ||!rowstockprice) {
                 console.log("Inputs cannot be empty.");
                 return; // Exit the function
-            }else if (availableQuantity < quantity) {
+            } else if (availableQuantity < quantity) {
                 alert('The quantity being inserted is greater than the available quantity.');
                 return; // Exit the function
-            }else{
-            document.getElementById('combinationName').disabled = true;
-            document.getElementById('combinationName').readOnly = true;
-            var table = document.getElementById('rawMaterialTableBody');
-            var row = table.insertRow();
+            } else if (rowstockprice > rowsellingprice ) {
+                alert('The price being inserted is less than the stock price.');
+                return; // Exit the function
+            }else {
+                document.getElementById('combinationName').disabled = true;
+                document.getElementById('combinationName').readOnly = true;
+                var table = document.getElementById('rawMaterialTableBody');
+                var row = table.insertRow();
 
-            var cell1 = row.insertCell(0);
-            var cell2 = row.insertCell(1);
-            var cell3 = row.insertCell(2);
-            var cell4 = row.insertCell(3);
-            cell1.innerHTML = combinationN;
-            cell2.innerHTML = document.getElementById('rowItemId').value;
-            cell3.innerHTML = document.getElementById('rowItemId').options[document.getElementById('rowItemId').selectedIndex].text;
-            cell4.innerHTML = quantity;
-         }
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+                var cell5 = row.insertCell(4);
+
+                cell1.innerHTML = combinationN;
+                cell2.innerHTML = document.getElementById('rowItemId').value;
+                cell3.innerHTML = document.getElementById('rowItemId').options[document.getElementById('rowItemId').selectedIndex].text;
+                cell4.innerHTML = quantity;
+                cell5.innerHTML = document.getElementById('rowsellingprice').value;
+                // Calculate the height of a row
+                var rowHeight = row.offsetHeight;
+
+                // Calculate the current height of the table body
+                var currentHeight = table.offsetHeight;
+
+                // Set the maximum height of the table body
+                var maxHeight = 300;
+
+                // Increase the height of the table body by the height of a row, but not beyond the maximum height
+                if (currentHeight + rowHeight <= maxHeight) {
+                    table.style.height = (currentHeight + rowHeight) + "px";
+                }
+                document.getElementById('rowItemId').selectedIndex = 0;
+                document.getElementById('rowavailableQuantity').value = '';
+                document.getElementById('rowquantity').value = '';
+                document.getElementById('rowsellingprice').value = '';
+                document.getElementById('rowstockprice').value = '';
+                
+            }
         }
+
         function submitCombination() {
             var cname = document.getElementById('combinationName').value;
             var table = document.getElementById('rawMaterialTable');
@@ -621,17 +683,21 @@ function sendDatal(section, data, callback) {
                 var rowid = row.cells[1].innerHTML;
                 var rawMaterial = row.cells[2].innerHTML;
                 var quantity = row.cells[3].innerHTML;
+                var price = row.cells[4].innerHTML;
 
                 data.push({
                     name: name,
                     rowid: rowid,
                     rawMaterial: rawMaterial,
-                    quantity: quantity
+                    quantity: quantity,
+                    price:price
                 });
             }
 
             sendDatac('addCombination', data, function () {
                 clearCombinationForm();
+                loadCombinations();
+                displaycombinations();
             });
 
             document.getElementById('combinationName').disabled = false;
@@ -686,7 +752,8 @@ function sendDatal(section, data, callback) {
         document.getElementById('rowItemId').selectedIndex = 0;
         document.getElementById('rowavailableQuantity').value = '';
         document.getElementById('rowquantity').value = '';
-
+        document.getElementById('rowsellingprice').value = '';
+        document.getElementById('rowstockprice').value = '';
         // Clear the raw material table
         var table = document.getElementById('rawMaterialTableBody');
         while (table.firstChild) {
@@ -716,6 +783,22 @@ function sendDatal(section, data, callback) {
                 });
             }
         });
+        function displaycombinations() {
+        // Fetch combination data from the server/database
+        fetchcombinationData().then(function (combinationData) {
+            // Display combination data in the table
+            var combinationTableBody = document.getElementById("combinationTablebody");
+            clearTable(combinationTableBody);
+
+            combinationData.forEach(function (item) {
+                var row = combinationTableBody.insertRow();
+                row.insertCell(0).textContent = item.name;
+                row.insertCell(1).textContent = item.rawMaterial;
+                row.insertCell(2).textContent = item.quantity;
+                row.insertCell(3).textContent = item.price;
+            });
+        });
+}
 
     function displayInventory() {
         // Fetch inventory data from the server/database
@@ -729,6 +812,9 @@ function sendDatal(section, data, callback) {
                 row.insertCell(0).textContent = item.id;
                 row.insertCell(1).textContent = item.name;
                 row.insertCell(2).textContent = item.quantity;
+                row.insertCell(3).textContent = item.price;
+                row.insertCell(4).textContent = item.quantity*item.price;
+
             });
         });
     }
@@ -754,6 +840,10 @@ function sendDatal(section, data, callback) {
         while (tableBody.firstChild) {
             tableBody.removeChild(tableBody.firstChild);
         }
+    }
+    function fetchcombinationData() {
+        // Make an AJAX request to the server to fetch inventory data
+        return fetchDataFromServer("getCombinationData", {});
     }
 
     function fetchInventoryData() {

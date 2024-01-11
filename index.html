@@ -57,6 +57,73 @@
             transition: margin-left .5s;
             padding: 16px;
         }
+
+        .dashboard-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        #myChart {
+            width: 100%;
+            max-width: 400px; /* Set your desired max width */
+            height: auto;
+            margin: 0 auto; /* Center the chart */
+            display: block;
+        }
+        #inventory-db-results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .shop-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            margin: 5px;
+            text-align: center;
+            flex: 0 0 calc(50% - 10px); /* This will make at least two cards fit horizontally */
+            box-sizing: border-box; /* Include padding and border in the width calculation */
+            transition: all 0.3s ease; /* Add animation */
+        }
+
+        #totalS, #totalSales, #totalSalesj {
+            background-color: #8ac6f2; /* Lighter blue */
+        }
+
+        #totalL, #totalLosses, #totalLossesj {
+            background-color: #ff7f7f; /* Lighter red */
+        }
+
+        #totalC, #totalCapital, #totalCapitalj {
+            background-color: #88f7df; /* Lighter aquamarine */
+        }
+
+        #totalp, #totalprofit, #totalprofitj {
+            background-color: #f7f788; /* Lighter yellow */
+        }
+
+        #totalExpenses {
+            background-color: #f7b1a3; /* Lighter coral */
+        }
+
+        #totalnet, #net, #netj {
+            background-color: #fff9e6; /* Lighter blanched almond */
+        }
+        .card:hover {
+            transform: scale(1.05); /* Add a zoom effect on hover */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add a shadow effect on hover */
+        }
+
     </style>
 </head>
 
@@ -70,10 +137,61 @@
         <a href="expence.html" id="expenceLink">expence</a>
         <a href="sales.html" id="salesLink">sales</a>
     </div>
+    <div id="main">
+        <button id="sidebarToggle" onclick="openNav()">☰</button>
+        <div class="top-container">
+            <div class="dashboard-container">
+                <h1>Most Expense</h1>
+                <div id="mydb-results">
+                    <canvas id="myChart"></canvas>
+                </div>
+                <div id="inventory-db-results">
+                    <div class="shop-container" id="fruit-shop">
+                        <h1>GENERAL</h1>
+                        <div id="inventory-db-results">
+                            <!-- The results will be inserted here -->
+                            <div id="totalS" class="card"></div>
+                            <div id="totalL" class="card"></div>
+                            <div id="totalC" class="card"></div>
+                            <div id="totalp" class="card"></div>
+                            <div id="totalExpenses" class="card"></div>
+                            <div id="totalnet" class="card"></div>
+                        </div>
+                    </div>
+                </div>            
+            </div>
+                <div class="dashboard-container">
+                    <div class="shop-container" id="fruit-shop">
+                        <div id="inventory-db-results">
+                        <h1>fruit shope general</h1>
+                        <!-- The results will be inserted here -->
+                        <div id="totalSales" class="card"></div>
+                        <div id="totalLosses" class="card"></div>
+                        <div id="totalCapital" class="card"></div>
+                        <div id="totalprofit" class="card"></div>
+                        <div id="net" class="card"></div>
+                        </div>
+                         </div>
+                         <div class="shop-container" id="juice-shop">
+                        <div id="inventory-db-results">
+                        <h1>juice shope general</h1>
+                        <!-- The results will be inserted here -->
+                        <div id="totalSalesj" class="card"></div>
+                        <div id="totalLossesj" class="card"></div>
+                        <div id="totalCapitalj" class="card"></div>
+                        <div id="totalprofitj" class="card"></div>
+                        <div id="netj" class="card"></div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
     <script>
+        // script.js
+    
         // Get the current page filename (e.g., "fruit.html")
         var currentPage = location.pathname.split("/").slice(-1)[0];
-
+    
         // Function to set the background color and disable the link for the current page
         function setCurrentPageStyle() {
             var fruitLink = document.getElementById("fruitLink");
@@ -84,140 +202,124 @@
             // Reset styles for all links
             fruitLink.style.backgroundColor = "";
             fruitLink.style.pointerEvents = "auto";
-
+    
             juiceLink.style.backgroundColor = "";
             juiceLink.style.pointerEvents = "auto";
-
+    
             salesLink.style.backgroundColor = "";
             salesLink.style.pointerEvents = "auto";
-
+    
             expenceLink.style.backgroundColor = "";
             expenceLink.style.pointerEvents = "auto";
-           // Set styles for the current page
-            if (currentPage === "index.html") {  // Corrected the syntax here
+            // Set styles for the current page
+            if (currentPage === "index.html") {
                 Dashboardlink.style.backgroundColor = "green";
                 Dashboardlink.style.pointerEvents = "none"; // Disable the link
             }
-
         }
-
+    
         // Call the function on page load
         setCurrentPageStyle();
-    </script>
-  <div id="main">
-    <button id="sidebarToggle" onclick="openNav()">☰</button>
-<div class="top-container">
-    <section id="dashboardSection" class="card">
-        <div class="dashboard-container">
-            <h2>Dashboard</h2>
-            <div class="dashboard">
-                <div class="chart-container">
-                    <canvas id="myChart" width="400" height="200"></canvas>
-                </div>
-                <div class="summary">
-                    <h3>Inventory Summary</h3>
-                    <p>Total Products: <span id="totalProducts">0</span></p>
-                    <p>Total Sales: <span id="totalSales">0</span></p>
-                    <p>Total Losses: <span id="totalLosses">0</span></p>
-                    <p>Total Profit: $<span id="totalProfit">0.00</span></p>
-                </div>
-            </div>
-        </div>
-    </section>
     
-    </div></div>
-    <script>
         function openNav() {
             document.getElementById("sidebar").style.width = "250px";
             document.getElementById("main").style.marginLeft = "250px";
         }
-
+    
         function closeNav() {
             document.getElementById("sidebar").style.width = "0";
             document.getElementById("main").style.marginLeft = "0";
         }
-        
-function updateChart(chartData) {
-    // Assuming you have an HTML canvas element with id 'myChart'
-    var ctx = document.getElementById('myChart').getContext('2d');
+        fetch('dash.php')
+    .then(response => response.json())
+    .then(data => {
+        // Handle Expenses Data
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const colors = data.expenses.map(() => '#' + Math.floor(Math.random() * 16777215).toString(16));
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.expenses.map(item => item.ExpenseType),
+                datasets: [{
+                    data: data.expenses.map(item => item.total_cost),
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            let dataset = data.datasets[tooltipItem.datasetIndex];
+                            let total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+                                return previousValue + currentValue;
+                            });
+                            let currentValue = dataset.data[tooltipItem.index];
+                            let percentage = Math.floor(((currentValue/total) * 100)+0.5);         
+                            return data.labels[tooltipItem.index] + ": " + percentage + "%";
+                        }
+                    }
+                },
+                animation: {
+                    onComplete: function () {
+                        if(this.chart !== undefined) {
+                            let ctx = this.chart.ctx;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            let chart = this;
+                            let datasets = this.config.data.datasets;
 
-    // Check if the chart instance exists
-    var existingChart = Chart.getChart(ctx);
+                            datasets.forEach(function (dataset, i) {
+                                ctx.font = chart.width / 100 + 'em sans-serif';
+                                ctx.fillStyle = '#fff';
 
-    // If the chart instance exists, destroy it
-    if (existingChart) {
-        existingChart.destroy();
-    }
-
-    // Extract data for labels and quantities
-    var labels = chartData.labels;
-    var quantities = chartData.quantities;
-
-    // Create a bar chart
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Quantity in Inventory',
-                data: quantities,
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
+                                chart.getDatasetMeta(i).data.forEach(function (p, j) {
+                                    if(datasets[i].data[j] > 0) {
+                                        let value = datasets[i].data[j];
+                                        let total = datasets[i].data.reduce((a, b) => a + b, 0);
+                                        let percentage = Math.round((value / total) * 100);
+                                        ctx.fillText(percentage + '%', p._model.x, p._model.y);
+                                    }
+                                });
+                            });
+                        }
+                    }
                 }
             }
-        }
-    });
-}
+        });
 
 
-function updateSummary() {
-    // Fetch data from the server/database for summary
-    // Update the summary information
-    var totalProducts = 0; // Replace with actual count
-    var totalSales = 0; // Replace with actual count
-    var totalLosses = 0; // Replace with actual count
-    var totalProfit = 0; // Replace with actual value
+        // Handle Totals Data fruit
+        document.getElementById('totalSales').innerHTML = '<h2>Fruit Sales</h2><p>' + data.totals.total_sales + '</p>';
+        document.getElementById('totalLosses').innerHTML = '<h2>Fruit Losses</h2><p>' + data.totals.total_losses + '</p>';
+        document.getElementById('totalCapital').innerHTML = '<h2>Fruit Capital</h2><p>' + data.totals.total_capital + '</p>';
+        document.getElementById('totalprofit').innerHTML = '<h2>Fruit profit</h2><p>' + data.totals.total_difference + '</p>';
+        document.getElementById('net').innerHTML = '<h2>Juice Net</h2><p>' + data.totals.net + '</p>';
+         // Handle Totals Data juice
+         document.getElementById('totalSalesj').innerHTML = '<h2>Juice Sales</h2><p>' + data.totalsj.total_salesj + '</p>';
+        document.getElementById('totalLossesj').innerHTML = '<h2>Juice Losses</h2><p>' + data.totalsj.total_lossesj + '</p>';
+        document.getElementById('totalCapitalj').innerHTML = '<h2>Juice Capital</h2><p>' + data.totalsj.total_capitalj + '</p>';
+        document.getElementById('totalprofitj').innerHTML = '<h2>Juice profit</h2><p>' + data.totalsj.total_differencej + '</p>';
+        document.getElementById('netj').innerHTML = '<h2>Juice Net</h2><p>' + data.totalsj.netj + '</p>';
+        // Handle Totals Data
+        document.getElementById('totalS').innerHTML = '<h2>Total Sales</h2><p>' + (Number(data.totals.total_sales) + Number(data.totalsj.total_salesj)) + '</p>';
+        document.getElementById('totalL').innerHTML = '<h2>Total Losses</h2><p>' + (Number(data.totals.total_losses) + Number(data.totalsj.total_lossesj)) + '</p>';
+        document.getElementById('totalC').innerHTML = '<h2>Total Capital</h2><p>' + (Number(data.totals.total_capital) + Number(data.totalsj.total_capitalj)) + '</p>';
+        document.getElementById('totalp').innerHTML = '<h2>Total profit</h2><p>' + (Number(data.totals.total_difference) + Number(data.totalsj.total_differencej)) + '</p>';
+       
+        let total_expenses = data.expenses.reduce((total, expense) => total + Number(expense.total_cost), 0);
+         // Display total expenses
+        document.getElementById('totalExpenses').innerHTML = '<h2>Total Expenses</h2><p>' + total_expenses + '</p>';
 
-    document.getElementById('totalProducts').innerText = totalProducts;
-    document.getElementById('totalSales').innerText = totalSales;
-    document.getElementById('totalLosses').innerText = totalLosses;
-    document.getElementById('totalProfit').innerText = totalProfit.toFixed(2);
-}
+        // Calculate and display net after subtracting expenses
+        let net_after_expenses = (Number(data.totals.net) + Number(data.totalsj.netj)) - total_expenses;
+        document.getElementById('totalnet').innerHTML = '<h2>Net</h2><p>' +  net_after_expenses + '</p>';
 
-function displayChart() {
-    // Fetch data from the server/database for chart
-    fetchChartData(function (chartData) {
-        // Update the chart data
-        updateChart(chartData);
-    });
-}
+    })
+    .catch(error => console.error('Error fetching data:', error));
 
-function fetchChartData(callback) {
-    // Fetch data from the server/database for chart
-    // Modify the URL and parameters based on your server implementation
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'backend.php?action=chart', true);
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            try {
-                var chartData = JSON.parse(xhr.responseText);
-                callback(chartData);
-            } catch (error) {
-                console.error('Error parsing JSON:', error);
-                callback({ error: 'Error parsing JSON' });
-            }
-        }
-    };
-    xhr.send();
-}
-displayChart();
     </script>
+    
 </body>
 </html>

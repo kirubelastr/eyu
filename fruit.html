@@ -233,26 +233,58 @@ function closeNav() {
 function addItem() {
     // Get values from the form
     console.log("add item called");
-    var itemName = getValueById('itemName');
-    var quantity = getValueById('quantity');
-    var price = getValueById('price');
+    var itemName = document.getElementById('itemName').value;
+    var quantity = Number(document.getElementById('quantity').value);
+    var price = Number(document.getElementById('price').value);
+
+    if (!itemName || !quantity || !price) {
+        alert("Inputs cannot be empty.");
+        return; // Exit the function
+    }else {
     sendData('productSection', { itemName, quantity, price }, function () {
         displayInventory();
         loadDropdowns(); // Refresh dropdowns after adding items
+        resetFormi();
     });
     console.log("add item called ended");
+    }
+
+}
+function resetFormi() {
+    console.log('resetForms function called');
+    loadDropdowns();
+    
+    document.getElementById('itemName').value = '';
+    document.getElementById('quantity').value = '';
+    document.getElementById('price').value = '';
 }
 
 function sellItem() {
-    var productId = getValueById('sellItemId');
-    var quantitySold = getValueById('sellQuantity');
-    var sellingprice = getValueById('sellingprice');
+    var stockprice = Number(document.getElementById('stocksellingprice').value);
+    var stockquantity = Number(document.getElementById('Availablequantity').value);
+    var productId =  Number(document.getElementById('sellItemId').value);
+    var quantitySold = Number(document.getElementById('sellQuantity').value);
+    var sellingprice = Number(document.getElementById('sellingprice').value);
 
-    sendData('salesSection', { productId, quantitySold, sellingprice }, function (response) {
-        displayInventory();
-        resetForms();  // Call the function to reset the form
-    });
+    console.log(stockprice+" "+stockquantity+" "+productId+" "+quantitySold+" "+sellingprice);
+
+    if (!sellingprice || !quantitySold || !productId || !stockquantity || !stockprice ) {
+        alert("Inputs cannot be empty.");
+        return; // Exit the function
+    } else if (sellingprice <= stockprice) {
+        alert("Selling price must be greater than stock price.");
+        return; // Exit the function
+    } else if (quantitySold > stockquantity) {
+        alert("Stock quantity must be greater than the selling quantity.");
+        return; // Exit the function
+    } else {
+        sendData('salesSection', { productId, quantitySold, sellingprice }, function (response) {
+            displayInventory();
+            resetForms();  // Call the function to reset the form
+        });
+    }
 }
+
 
 function sendData(section, data, callback) {
     console.log('Sending data 1:');
@@ -311,20 +343,26 @@ function resetForms() {
 }
 
 function recordLoss() {
-    // Get values from the form
-    var productId = getValueById('lossItemId');
-    var quantityLost = getValueById('lossQuantity');
-    var reason = getValueById('lossReason');
-
+            
+    var avalquantity =Number(document.getElementById('Availablequantityloss').value);
+    var productId = Number(document.getElementById('lossItemId').value);
+    var quantityLost = Number(document.getElementById('lossQuantity').value);
+    var reason = document.getElementById('lossReason').value;
     // Validate the values (add more validation as needed)
-
-    // Send the data to the server to record the loss
-    // After successful loss recording, refresh inventory, chart, and update summary
-    sendData('lossesSection', { productId, quantityLost, reason }, function () {
-        displayInventory();
-        resetForml();  // Call the function to reset the form
-    });
+    if (!productId || !quantityLost || !reason || !avalquantity) {
+        alert("Inputs cannot be empty.");
+        return; // Exit the function
+    } else if (avalquantity < quantityLost) {
+        alert("Stock quantity must be greater than the loss quantity.");
+        return; // Exit the function
+    } else {
+        sendData('lossesSection', { productId, quantityLost, reason }, function () {
+            displayInventory();
+            resetForml();  
+        });
+    }
 }
+
 
 function resetForml() {
     console.log('resetForml function called');
@@ -530,7 +568,7 @@ function updateInventoryDisplay(data) {
         // Populate the cells with data
         idCell.innerHTML = item.id;
         nameCell.innerHTML = item.name;
-        quantityCell.innerHTML = item.quantity + ' units';
+        quantityCell.innerHTML = item.quantity + ' kilograms';
         priceCell.innerHTML = '$' + item.price;
         actionCell.innerHTML = '<button onclick="editItem(' + item.id + ')">Edit</button>' + 
                                '<button onclick="deleteItem(' + item.id + ')">Delete</button>';

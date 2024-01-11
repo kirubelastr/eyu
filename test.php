@@ -43,6 +43,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
     $stmt->close();
+
+    // Prepare and execute the second statement
+    $sql = "INSERT INTO product_inventory (name, quantity, price) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        echo json_encode(["error" => "Error preparing statement: " . $conn->error]);
+        return;
+    }
+
+    $stmt->bind_param("sdd", $itemName, $quantity, $price);
+
+    if ($stmt->execute()) {
+        echo json_encode(["message" => "Product added successfully"]);
+    } else {
+        echo json_encode(["error" => "Error adding product: " . $stmt->error]);
+    }
+
+    $stmt->close();
 }
 
 $conn->close();
