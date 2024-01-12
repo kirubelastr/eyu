@@ -109,7 +109,15 @@
             max-height: 200px;
             overflow-y: auto;
         }
-
+        #popup { position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background-color: #fff; 
+            padding: 20px; 
+            border: 1px solid #000; 
+            display: none; 
+        }
     </style>
 </head>
 
@@ -226,7 +234,7 @@
         
 
         <section id="inventorySection" class="card">
-            <h2>Inventory</h2>
+            <h2>Row Materials</h2>
             <table id="inventoryTable">
                 <thead>
                     <tr>
@@ -235,6 +243,7 @@
                         <th>Quantity</th>
                         <th>price</th>
                         <th>total</th>
+                        <th>actions</th>
                     </tr>
                 </thead>
                 <tbody id="inventoryTableBody"></tbody>
@@ -260,6 +269,18 @@
     </div>
 
     </div>  
+    <div id="popup">
+        <label for="popup-id">ID</label>
+        <input id="popup-id" readonly>
+        <label for="popup-name">Name</label>
+        <input id="popup-name" type="text" pattern="\\D+" title="Please enter a string">
+        <label for="popup-quantity">Quantity</label>
+        <input id="popup-quantity" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
+        <label for="popup-price">Price</label>
+        <input id="popup-price" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
+        <button id="submitBtn">Submit</button>
+        <button id="closeBtn">Close</button>
+    </div>
     <script>
         // Get the current page filename (e.g., "fruit.html")
         var currentPage = location.pathname.split("/").slice(-1)[0];
@@ -296,63 +317,63 @@
         });
 
         function addRawMaterial() {
-
             var itemName = document.getElementById('rawMaterialName').value;
             var quantity = document.getElementById('rawMaterialQuantity').value;
             var price = document.getElementById('rawMaterialprice').value;
-             // Check if any of the inputs are empty
-            if (!itemName || !quantity || !price) {
-                console.log("Inputs cannot be empty.");
+
+            // Check if any of the inputs are empty or zero
+            if (!itemName || !quantity || !price || quantity == 0 || price == 0) {
+               alert("Inputs cannot be empty or zero.");
                 return; // Exit the function
-            }else{
-                sendData('addRawMaterial', { itemName, quantity, price }, function () {
-                displayInventory();
-            });
-
-            console.log("add item called ended");
-            }
-            
-        }
-        function sendData(section, data, callback) {
-    console.log('Sending data:', data);
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'test.php', true);
-
-    // Set the content type to application/x-www-form-urlencoded
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            console.log('Response:', xhr.responseText);
-            if (xhr.status == 200) {
-                try {
-                    var responseData = JSON.parse(xhr.responseText);
-                    console.log('Parsed Response:', responseData);
-                    alert('Server Response: ' + xhr.responseText); // Display server response
-                    // Check if handleResponse function exists before calling it
-                    if (typeof handleResponse === 'function') {
-                        handleResponse(section);
-                    }
-                    if (typeof callback === 'function') {
-                        callback(responseData);
-                    }
-                } catch (error) {
-                    console.error('Error parsing JSON:', error);
-                    alert('Error parsing JSON');
-                }
             } else {
-                console.error('Request failed with status:', xhr.status);
-                alert('Request failed with status: ' + xhr.status);
+                sendData('addRawMaterial', { itemName, quantity, price }, function () {
+                    displayInventory();
+                });
+
+                console.log("add item called ended");
             }
         }
-    };
 
-    // Convert the data object to a URL-encoded string
-    var encodedData = encodeData(data);
+        function sendData(section, data, callback) {
+                console.log('Sending data:', data);
 
-    xhr.send(encodedData);
-}
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'test.php', true);
+
+                // Set the content type to application/x-www-form-urlencoded
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4) {
+                        console.log('Response:', xhr.responseText);
+                        if (xhr.status == 200) {
+                            try {
+                                var responseData = JSON.parse(xhr.responseText);
+                                console.log('Parsed Response:', responseData);
+                                alert('Server Response: ' + xhr.responseText); // Display server response
+                                // Check if handleResponse function exists before calling it
+                                if (typeof handleResponse === 'function') {
+                                    handleResponse(section);
+                                }
+                                if (typeof callback === 'function') {
+                                    callback(responseData);
+                                }
+                            } catch (error) {
+                                console.error('Error parsing JSON:', error);
+                                alert('Error parsing JSON');
+                            }
+                        } else {
+                            console.error('Request failed with status:', xhr.status);
+                            alert('Request failed with status: ' + xhr.status);
+                        }
+                    }
+                };
+
+                // Convert the data object to a URL-encoded string
+                var encodedData = encodeData(data);
+
+                xhr.send(encodedData);
+            }
 
 function handleResponse(section) {
     // You can customize this function based on your needs
@@ -407,8 +428,8 @@ function handleResponse(section) {
             var quantity = document.getElementById('sellQuantity').value;
             var maxq = document.getElementById('maxQuantity').value;
             console.log(combinationId+quantity);
-            if (!combinationId || !quantity || !maxq ) {
-                alert("Inputs cannot be empty.");
+            if (!combinationId || !quantity || !maxq  || quantity == 0 || maxq == 0) {
+                alert("Inputs cannot be empty or the values 0.");
                 return; // Exit the function
             } else if (quantity > maxq) {
                 alert('The quantity being inserted is greater than the available quantity.');
@@ -519,8 +540,8 @@ function recordLoss() {
     var lossReason = document.getElementById('lossReason').value;
     var maxq = document.getElementById('avalQuantity').value;
 
-    if (!rowid || !quantity || !lossReason || !maxq) {
-        console.log("Inputs cannot be empty.");
+    if (!rowid || !quantity || !lossReason || !maxq  || quantity == 0 || maxq == 0) {
+       alert("Inputs cannot be empty or 0.");
         return; // Exit the function
     }
 
@@ -621,16 +642,19 @@ function sendDatal(section, data, callback) {
             var combinationN = document.getElementById('combinationName').value;
             var rowsellingprice = parseFloat(document.getElementById('rowsellingprice').value);
             var rowstockprice = parseFloat(document.getElementById('rowstockprice').value);
-            if (!availableQuantity || !quantity || !combinationN || !rowsellingprice ||!rowstockprice) {
-                console.log("Inputs cannot be empty.");
+
+            // Calculate the unit price and the price for the input quantity
+            var unitPrice = rowstockprice * quantity;
+            if (!availableQuantity || !quantity || !combinationN || !rowsellingprice ||!rowstockprice || quantity == 0 || rowstockprice == 0 || availableQuantity == 0 || rowsellingprice == 0) {
+                alert("Inputs cannot be empty or be 0.");
                 return; // Exit the function
             } else if (availableQuantity < quantity) {
                 alert('The quantity being inserted is greater than the available quantity.');
                 return; // Exit the function
-            } else if (rowstockprice > rowsellingprice ) {
+            } else if (unitPrice > rowsellingprice ) {
                 alert('The price being inserted is less than the stock price.');
                 return; // Exit the function
-            }else {
+            } else {
                 document.getElementById('combinationName').disabled = true;
                 document.getElementById('combinationName').readOnly = true;
                 var table = document.getElementById('rawMaterialTableBody');
@@ -646,7 +670,8 @@ function sendDatal(section, data, callback) {
                 cell2.innerHTML = document.getElementById('rowItemId').value;
                 cell3.innerHTML = document.getElementById('rowItemId').options[document.getElementById('rowItemId').selectedIndex].text;
                 cell4.innerHTML = quantity;
-                cell5.innerHTML = document.getElementById('rowsellingprice').value;
+                cell5.innerHTML = rowsellingprice; // Use the updated selling price
+
                 // Calculate the height of a row
                 var rowHeight = row.offsetHeight;
 
@@ -665,9 +690,9 @@ function sendDatal(section, data, callback) {
                 document.getElementById('rowquantity').value = '';
                 document.getElementById('rowsellingprice').value = '';
                 document.getElementById('rowstockprice').value = '';
-                
             }
         }
+
 
         function submitCombination() {
             var cname = document.getElementById('combinationName').value;
@@ -784,40 +809,119 @@ function sendDatal(section, data, callback) {
             }
         });
         function displaycombinations() {
-        // Fetch combination data from the server/database
-        fetchcombinationData().then(function (combinationData) {
-            // Display combination data in the table
-            var combinationTableBody = document.getElementById("combinationTablebody");
-            clearTable(combinationTableBody);
+                // Fetch combination data from the server/database
+                fetchcombinationData().then(function (combinationData) {
+                    // Display combination data in the table
+                    var combinationTableBody = document.getElementById("combinationTablebody");
+                    clearTable(combinationTableBody);
 
-            combinationData.forEach(function (item) {
-                var row = combinationTableBody.insertRow();
-                row.insertCell(0).textContent = item.name;
-                row.insertCell(1).textContent = item.rawMaterial;
-                row.insertCell(2).textContent = item.quantity;
-                row.insertCell(3).textContent = item.price;
+                    combinationData.forEach(function (item) {
+                        var row = combinationTableBody.insertRow();
+                        row.insertCell(0).textContent = item.name;
+                        row.insertCell(1).textContent = item.rawMaterial;
+                        row.insertCell(2).textContent = item.quantity;
+                        row.insertCell(3).textContent = item.price;
+                    });
+                });
+        }
+        function displayInventory() {
+    // Fetch inventory data from the server/database
+    fetchInventoryData().then(function (inventoryData) {
+        // Display inventory data in the table
+        var inventoryTableBody = document.getElementById("inventoryTableBody");
+        clearTable(inventoryTableBody);
+
+        inventoryData.forEach(function (item) {
+            var row = inventoryTableBody.insertRow();
+
+            // Add cells for each item property
+            ['id', 'name', 'quantity', 'price'].forEach(function (property, index) {
+                var cell = row.insertCell(index);
+                cell.textContent = item[property];
+                // Make the id read-only
+                if (property !== 'id') {
+                    cell.contentEditable = "true";
+                }
             });
+
+            // Add cell for total price
+            var cell = row.insertCell(4);
+            cell.textContent = item.quantity * item.price;
+            cell.contentEditable = "true";
+
+            // Add "Edit" button
+            var editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.onclick = function() {
+                createPopup(row, 'edit');
+            };
+            row.appendChild(editBtn);
         });
+    });
 }
 
-    function displayInventory() {
-        // Fetch inventory data from the server/database
-        fetchInventoryData().then(function (inventoryData) {
-            // Display inventory data in the table
-            var inventoryTableBody = document.getElementById("inventoryTableBody");
-            clearTable(inventoryTableBody);
+function createPopup(row, route) {
+    // Get the pop-up div
+    var popup = document.getElementById('popup');
 
-            inventoryData.forEach(function (item) {
-                var row = inventoryTableBody.insertRow();
-                row.insertCell(0).textContent = item.id;
-                row.insertCell(1).textContent = item.name;
-                row.insertCell(2).textContent = item.quantity;
-                row.insertCell(3).textContent = item.price;
-                row.insertCell(4).textContent = item.quantity*item.price;
+    // Fill the inputs with the row's data
+    document.getElementById('popup-id').value = row.cells[0].textContent;
+    document.getElementById('popup-name').value = row.cells[1].textContent;
+    document.getElementById('popup-quantity').value = row.cells[2].textContent;
+    document.getElementById('popup-price').value = row.cells[3].textContent;
 
+    // Show the pop-up
+    popup.style.display = 'block';
+
+    // When the close button is clicked
+    document.getElementById('closeBtn').onclick = function() {
+        // Hide the pop-up
+        popup.style.display = 'none';
+    };
+
+    // When the submit button is clicked
+    document.getElementById('submitBtn').onclick = function() {
+        // Check the data type and the data
+        var id = document.getElementById('popup-id').value;
+        var name = document.getElementById('popup-name').value;
+        var quantity = document.getElementById('popup-quantity').value;
+        var price = document.getElementById('popup-price').value;
+        if (name === "" || isNaN(quantity) || isNaN(price)) {
+            alert('Invalid input');
+            return;
+        }
+        // Confirm the action
+        if (!confirm('Are you sure you want to submit the changes?')) {
+            return;
+        }
+        // Send the updated data to the server
+        fetch('edit_delet.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({route: route, id: id, name: name, quantity: quantity, price: price}),
+        }).then(function(response) {
+            response.text().then(function(text) {
+                if (response.ok) {
+                    // Update the row's data
+                    row.cells[0].textContent = id;
+                    row.cells[1].textContent = name;
+                    row.cells[2].textContent = quantity;
+                    row.cells[3].textContent = price;
+                    row.cells[4].textContent = quantity * price;
+                    alert(text);
+                } else {
+                    console.error('Failed to update row with id ' + id);
+                    alert(text);
+                }
             });
         });
-    }
+        // Hide the pop-up
+        popup.style.display = 'none';
+    };
+}
+
     function displaySalesAndLosses() {
         // Fetch sales and losses data from the server/database
         fetchSalesAndLossesData().then(function (data) {

@@ -59,21 +59,21 @@ function getInventoryData() {
 
     echo json_encode($data);
 }
-
-// Function to get sales and losses data
 function getSalesAndLossesData() {
     global $conn2;
 
-    // Implement your logic to retrieve the sales and losses data
-
-    // Example SQL query (modify according to your database structure)
-    $sql = "SELECT * FROM sales_and_losses";
+    // SQL query to join sales_and_losses and inventory tables on item_name and name
+    $sql = "SELECT sales_and_losses.*, inventory.price FROM sales_and_losses LEFT JOIN inventory ON sales_and_losses.item_name = inventory.name";
     $result = $conn2->query($sql);
 
     $data = array();
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
+            // If it is a loss, add the price from the inventory table to the selling_price
+            if ($row['action'] === 'loss') {
+                $row['selling_price'] = $row['price'];
+            }
             $data[] = $row;
         }
     }
