@@ -14,7 +14,7 @@ foreach ($result_expenses as $row_expense) {
 }
 
 // Fetch data for total sales
-$sql_sales = "SELECT COALESCE(SUM(COALESCE(total_price, 0)), 0) as total_sales FROM sales";
+$sql_sales = "SELECT COALESCE(SUM(COALESCE(quantity_sold * total_price, 0)), 0) as total_sales FROM sales";
 $result_sales = $conn->query($sql_sales);
 $row_sales = $result_sales->fetch_assoc();
 $total_sales = $row_sales['total_sales'];
@@ -25,14 +25,12 @@ $row_sales = $result_sales->fetch_assoc();
 $total_difference = $row_sales['total_difference'];
 
 
-// Fetch data for total losses
-$sql_losses = "SELECT COALESCE(SUM(COALESCE(quantity_lost, 0)), 0) as total_losses FROM losses";
+$sql_losses = "SELECT COALESCE(SUM(l.quantity_lost * i.price), 0) as total_losses FROM losses l JOIN products i ON l.product_id = i.id";
 $result_losses = $conn->query($sql_losses);
 $row_losses = $result_losses->fetch_assoc();
 $total_losses = $row_losses['total_losses'];
-
 // Fetch data for total capital
-$sql_capital = "SELECT COALESCE(SUM(COALESCE(quantity, 0) * COALESCE(price, 0)), 0) as total_capital FROM product_inventory";
+$sql_capital = "SELECT COALESCE(SUM(COALESCE(quantity, 0) * COALESCE(price, 0)), 0) as total_capital FROM products";
 $result_capital = $conn->query($sql_capital);
 $row_capital = $result_capital->fetch_assoc();
 $total_capital = $row_capital['total_capital'];
@@ -106,7 +104,7 @@ $row_losses = $result_losses->fetch_assoc();
 $total_lossesj = $row_losses['total_losses'];
 
 // Fetch data for total capital
-$sql_capital = "SELECT COALESCE(SUM(COALESCE(quantity, 0) * COALESCE(price, 0)), 0) as total_capital FROM product_inventory";
+$sql_capital = "SELECT COALESCE(SUM(COALESCE(quantity, 0) * COALESCE(price, 0)), 0) as total_capital FROM inventory";
 $result_capital = $conn2->query($sql_capital);
 $row_capital = $result_capital->fetch_assoc();
 $total_capitalj = $row_capital['total_capital'];

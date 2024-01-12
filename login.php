@@ -2,6 +2,7 @@
 session_start(); // Start the session
 
 $servername = "localhost";
+$alternativeServername = "locahost:3307"; // Add your alternative server name here
 $dbname = "login_credentials"; // replace with your database name
 $username = "root"; // replace with your username
 $password = ""; // replace with your password
@@ -11,7 +12,11 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // If connection fails, try the alternative server
+    $conn = new mysqli($alternativeServername, $username, $password, $dbname);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 }
 
 $response = array(); // Initialize the response array

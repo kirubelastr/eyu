@@ -2,6 +2,7 @@
 session_start(); // Start the session
 
 $servername = "localhost";
+$alternativeServername = "localhost:3307"; // Add your alternative server name here
 $username = "root";
 $password = "";
 
@@ -21,13 +22,20 @@ if($_SESSION['store'] == 'store1') {
 
 // Create connections
 $conn = new mysqli($servername, $username, $password, $dbname);
-$conn2 = new mysqli($servername, $username, $password, $dbname2);
-
-// Check connections
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // If connection fails, try the alternative server
+    $conn = new mysqli($alternativeServername, $username, $password, $dbname);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 }
+
+$conn2 = new mysqli($servername, $username, $password, $dbname2);
 if ($conn2->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // If connection fails, try the alternative server
+    $conn2 = new mysqli($alternativeServername, $username, $password, $dbname2);
+    if ($conn2->connect_error) {
+        die("Connection failed: " . $conn2->connect_error);
+    }
 }
 ?>
