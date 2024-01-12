@@ -1,16 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "inventory_db";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+require 'db_connection.php';
 
 // Fetch data for expenses
 $sql_expenses = "SELECT ExpenseType, COUNT(*) as count FROM expenses GROUP BY ExpenseType";

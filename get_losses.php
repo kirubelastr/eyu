@@ -1,19 +1,10 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "myDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require 'db_connection.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Fetch inventory data for dropdown
     $sql = "SELECT id, name, quantity FROM inventory";
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     if ($result->num_rows > 0) {
         $inventory = $result->fetch_all(MYSQLI_ASSOC);
@@ -31,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $lossReason = $data['lossReason'];
 
     // Validate the existence of the item in the inventory
-    $stmt = $conn->prepare("SELECT quantity FROM inventory WHERE id = ?");
+    $stmt = $conn2->prepare("SELECT quantity FROM inventory WHERE id = ?");
     $stmt->bind_param("i", $rowId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -41,17 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Calculate and update the inventory quantity
         $quantityToDeduct = min($inventoryRow['quantity'], $quantity);
-        $stmt = $conn->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
+        $stmt = $conn2->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
         $stmt->bind_param("ii", $quantityToDeduct, $rowId);
         $stmt->execute();
 
         // Record the loss in the losses table
-        $stmt = $conn->prepare("INSERT INTO losses (item_id, quantity, reason) VALUES (?, ?, ?)");
+        $stmt = $conn2->prepare("INSERT INTO losses (item_id, quantity, reason) VALUES (?, ?, ?)");
         $stmt->bind_param("iss", $rowId, $quantityToDeduct, $lossReason);
         $stmt->execute();
 
         // Fetch the item name from the inventory table
-        $stmt = $conn->prepare("SELECT name FROM inventory WHERE id = ?");
+        $stmt = $conn2->prepare("SELECT name FROM inventory WHERE id = ?");
         $stmt->bind_param("i", $rowId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -60,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $losses="loss";
 
         // Insert the data into the sales_and_losses table
-        $stmt = $conn->prepare("INSERT INTO sales_and_losses (action, item_name, quantity, reason) VALUES (?, ?, ?, ?)");
+        $stmt = $conn2->prepare("INSERT INTO sales_and_losses (action, item_name, quantity, reason) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssis",$losses, $itemName, $quantityToDeduct, $lossReason);
         $stmt->execute();
 
@@ -71,5 +62,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-$conn->close();
+$conn2->close();
 ?>

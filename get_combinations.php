@@ -1,19 +1,8 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "myDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require 'db_connection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $sql = "SELECT id, name, rowID, quantity FROM combinations"; // Replace 'combinations' with the actual table name
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     if ($result->num_rows > 0) {
         $combinations = array();
@@ -27,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             
                 // Check the available quantity in the inventory
                 $sql = "SELECT quantity FROM inventory WHERE id = ?";
-                $stmt = $conn->prepare($sql);
+                $stmt = $conn2->prepare($sql);
                 $stmt->bind_param("i", $rowid);
                 $stmt->execute();
                 $resultInventory = $stmt->get_result();
@@ -62,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $sellingPrice = floatval($data['sellingPrice']);
 
     $sql = "SELECT rowID, quantity, price FROM combinations WHERE id = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn2->prepare($sql);
     $stmt->bind_param("i", $combinationId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -76,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             foreach ($rowids as $index => $rowid) {
                 $quantityToDeduct = $quantities[$index] * $quantity;
     
-                $stmt = $conn->prepare("SELECT quantity, price FROM inventory WHERE id = ?");
+                $stmt = $conn2->prepare("SELECT quantity, price FROM inventory WHERE id = ?");
                 $stmt->bind_param("i", $rowid);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -89,20 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 // Add this to the total difference
                 $total_difference += $difference_times_quantity;
     
-                $stmt = $conn->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
+                $stmt = $conn2->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
                 $stmt->bind_param("di", $quantityToDeduct, $rowid);
                 $stmt->execute();
             }
     
             // Insert the total difference into the sales table
-            $stmt = $conn->prepare("INSERT INTO sales (item_id, quantity, selling_price) VALUES (?, ?, ?)");
+            $stmt = $conn2->prepare("INSERT INTO sales (item_id, quantity, selling_price) VALUES (?, ?, ?)");
             $stmt->bind_param("sdd", $combinationId, $quantity, $total_difference); // Use 'd' for double
             $stmt->execute();
                  
             echo json_encode(["message" => "Item sold successfully"]);
         }
         // Fetch the item name from the inventory table
-        $stmt = $conn->prepare("SELECT name FROM combinations WHERE id = ?");
+        $stmt = $conn2->prepare("SELECT name FROM combinations WHERE id = ?");
         $stmt->bind_param("i", $combinationId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -111,12 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $sell="sell";
     
         // Insert the data into the sales_and_losses table
-        $stmt = $conn->prepare("INSERT INTO sales_and_losses (action, item_name, quantity, selling_price) VALUES (?, ?, ?, ?)");
+        $stmt = $conn2->prepare("INSERT INTO sales_and_losses (action, item_name, quantity, selling_price) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssid",  $sell, $itemName, $quantityToDeduct, $total_difference);
         $stmt->execute();
     }
     
 }
 
-$conn->close();
+$conn2->close();
 ?>

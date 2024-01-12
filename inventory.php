@@ -1,20 +1,11 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "myDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require 'db_connection.php';
 
 function getInventory() {
-    global $conn;
+    global $conn2;
 
     $sql = "SELECT * FROM inventory";
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     if ($result->num_rows > 0) {
         $inventory = array();
@@ -39,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $data = json_decode($postData, true);
 
     if (!empty($data) && is_array($data)) {
-        $combinationName = mysqli_real_escape_string($conn, $data[0]['name']);
+        $combinationName = mysqli_real_escape_string($conn2, $data[0]['name']);
         $rowids = [];
         $rawMaterials = [];
         $quantities = [];
@@ -47,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         foreach ($data as $item) {
             if (is_array($item) && isset($item['name'], $item['rowid'], $item['rawMaterial'], $item['quantity'], $item['price'])) {
-                $rowids[] = mysqli_real_escape_string($conn, $item['rowid']);
-                $rawMaterials[] = mysqli_real_escape_string($conn, $item['rawMaterial']);
+                $rowids[] = mysqli_real_escape_string($conn2, $item['rowid']);
+                $rawMaterials[] = mysqli_real_escape_string($conn2, $item['rawMaterial']);
                 $quantities[] = floatval($item['quantity']);
                 $price[] = floatval($item['price']);
             } else {
@@ -64,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         $sql = "INSERT INTO combinations (name, rowID, rawMaterial, quantity ,price) VALUES (?, ?, ?, ?, ?)";
 
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         if ($stmt === false) {
             die('prepare() failed: ' . htmlspecialchars($conn->error));
         }
@@ -85,5 +76,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-$conn->close();
+$conn2->close();
 ?>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>inventory</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f05b69;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #waveCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+        }
+
+        .login {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px 30px 30px 30px;
+            border-radius: 10px;
+            position: relative;
+            animation: slide-up 0.5s ease;
+            box-shadow: 5px 10px 10px rgba(2, 128, 144, 0.2);
+        }
+
+        .login input[type="text"],
+        .login input[type="password"],
+        .login select {
+            display: block;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #f2f2f2;
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
+        .login button {
+            cursor: pointer;
+            color: #fff;
+            font-size: 16px;
+            text-transform: uppercase;
+            width: 100%;
+            border: 0;
+            padding: 15px 0;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: #f05b69;
+            transition: background-color 300ms;
+        }
+
+        .login button:hover {
+            background-color: #c04b59;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="waveCanvas"></canvas>
+
+<div class="login-container">
+    <form class="login" id="loginForm" method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <select name="store" required>
+            <option value="">Please select store</option>
+            <option value="store1">Store 1</option>
+            <option value="store2">Store 2</option>
+        </select><br>
+        <button type="button" onclick="submitForm()">Login</button>
+
+        <!-- Display invalid login message with red text -->
+        <p id="errorMessage" style="color: red;"></p>
+    </form>
+</div>
+
+<script>
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let time = 0;
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+
+        for (let i = 0; i < canvas.width; i++) {
+            ctx.lineTo(i, canvas.height / 2 + Math.sin(i * 0.01 + time) * 50);
+        }
+
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(0, canvas.height);
+        ctx.closePath();
+        ctx.fillStyle = '#1b2735'; // Change color as needed
+        ctx.fill();
+
+        time += 0.05;
+
+        requestAnimationFrame(animate);
+    }
+
+    function submitForm() {
+        const usernameInput = document.getElementsByName('username')[0].value;
+        const passwordInput = document.getElementsByName('password')[0].value;
+        const storeInput = document.getElementsByName('store')[0].value;
+
+        if (!usernameInput || !passwordInput || !storeInput) {
+            document.getElementById('errorMessage').innerText = "Please fill in all the fields.";
+            return;
+        }else{
+            const form = document.getElementById('loginForm');
+            const formData = new FormData(form);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'login.php', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                window.location.href = 'index.html';
+                            } else {
+                                document.getElementById('errorMessage').innerText = response.message;
+                            }
+                        } catch (e) {
+                            console.error("Parsing error:", e);
+                        }
+                    } else {
+                        console.error("HTTP request error:", xhr.status);
+                    }
+                }
+            };
+
+            xhr.send(formData);
+        }
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
+

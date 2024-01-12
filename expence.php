@@ -1,9 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "inventory_db";
-
+require 'db_connection.php';
 // Function to establish a database connection
 function connectToDatabase($servername, $username, $password, $dbname) {
     $conn = new mysqli($servername, $username, $password, $dbname);

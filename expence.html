@@ -6,7 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="sidebar.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.getJSON('check_session.php', function(data) {
+                if (!data.sessionSet) {
+                    window.location.href = 'login.html';
+                } else {
+                    // Update the button text with the session value
+                    $('#sidebarToggle').text('☰ ' + data.sessionValue);
+                }
+            });
+        });
+    </script>
     <title>Fruit Sales Inventory Management System</title>
     <style>
         body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
@@ -121,15 +134,15 @@
 
 <body>
     <div id="sidebar">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
         <a href="index.html" id="Dashboardlink">Dashboard</a>
         <a href="fruit.html" id="fruitLink">fruit</a>
         <a href="juice.html" id="juiceLink">juice</a>
         <a href="expence.html" id="expenceLink">expence</a>
         <a href="sales.html" id="salesLink">sales</a>
+        <button onclick="logout()">Logout</button>
     </div>
     <div id="main">
-        <button id="sidebarToggle" onclick="openNav()">☰</button>
+        <button id="sidebarToggle" onclick="toggleNav()">☰</button>
         <div class="top-container">
             <section id="dashboardSection" >
                 <div class="card">
@@ -207,29 +220,20 @@
     <script>
         var currentPage = location.pathname.split("/").slice(-1)[0];
         function setCurrentPageStyle() {
-            var fruitLink = document.getElementById("fruitLink");
-            var juiceLink = document.getElementById("juiceLink");
-            var expenceLink = document.getElementById("expenceLink");
-            var salesLink = document.getElementById("salesLink");
-            var Dashboardlink = document.getElementById("Dashboardlink");
+            var navLinks = document.querySelectorAll("#sidebar a");
+
             // Reset styles for all links
-            fruitLink.style.backgroundColor = "";
-            fruitLink.style.pointerEvents = "auto";
+            navLinks.forEach(function (link) {
+                link.style.backgroundColor = "";
+                link.style.pointerEvents = "auto";
+            });
 
-            juiceLink.style.backgroundColor = "";
-            juiceLink.style.pointerEvents = "auto";
-
-            salesLink.style.backgroundColor = "";
-            salesLink.style.pointerEvents = "auto";
-
-            Dashboardlink.style.backgroundColor = "";
-            Dashboardlink.style.pointerEvents = "auto";
             if (currentPage === "expence.html") {
                 expenceLink.style.backgroundColor = "green";
                 expenceLink.style.pointerEvents = "none";
             } 
         }
-
+       
         function formatDateTime(dateTimeString) {
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
             return new Date(dateTimeString).toLocaleDateString('en-US', options);
@@ -319,15 +323,6 @@
                 });
             }
 
-            function openNav() {
-                document.getElementById("sidebar").style.width = "250px";
-                document.getElementById("main").style.marginLeft = "250px";
-            }
-
-            function closeNav() {
-                document.getElementById("sidebar").style.width = "0";
-                document.getElementById("main").style.marginLeft = "0";
-            }
 
         updateExpenseTypes();
         

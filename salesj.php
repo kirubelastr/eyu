@@ -1,17 +1,6 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "myDB";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die(json_encode(['error' => "Connection failed: " . $conn->connect_error]));
-}
-function getSalesData($conn, $filter) {
+require 'db_connection.php';
+function getSalesData($conn2, $filter) {
     $sql = "";
     switch ($filter) {
         case 'dailyj':
@@ -36,10 +25,10 @@ function getSalesData($conn, $filter) {
             break;
     }
 
-        $result = $conn->query($sql);
+        $result = $conn2->query($sql);
 
         if (!$result) {
-            die(json_encode(['error' => 'Query failed: ' . $conn->error]));
+            die(json_encode(['error' => 'Query failed: ' . $conn2->error]));
         }
 
         $data = [];
@@ -55,17 +44,17 @@ function getSalesData($conn, $filter) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $filter = isset($_GET['filter']) ? mysqli_real_escape_string($conn, $_GET['filter']) : 'monthly';
-    $data = getSalesData($conn, $filter);
+    $filter = isset($_GET['filter']) ? mysqli_real_escape_string($conn2, $_GET['filter']) : 'monthly';
+    $data = getSalesData($conn2, $filter);
     echo json_encode($data);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $json = file_get_contents('php://input');
     $data = json_decode($json);
 
     if ($data->action === 'edit') {
-        $id = isset($data->id) ? mysqli_real_escape_string($conn, $data->id) : 0;
-        $quantity_sold = isset($data->quantity_sold) ? mysqli_real_escape_string($conn, $data->quantity_sold) : 0;
-        $total_sales = isset($data->total_sales) ? mysqli_real_escape_string($conn, $data->total_sales) : 0;
+        $id = isset($data->id) ? mysqli_real_escape_string($conn2, $data->id) : 0;
+        $quantity_sold = isset($data->quantity_sold) ? mysqli_real_escape_string($conn2, $data->quantity_sold) : 0;
+        $total_sales = isset($data->total_sales) ? mysqli_real_escape_string($conn2, $data->total_sales) : 0;
 
         if (!$id || !$quantity_sold || !$total_sales) {
             echo json_encode(['error' => 'Invalid input data']);
@@ -74,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Fetch the current sales record
         $sql = "SELECT * FROM sales WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -82,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Fetch the corresponding product record
         $sql = "SELECT * FROM inventory WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("i", $current_sales['item_id']);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -102,21 +91,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Update the sales record
         $sql = "UPDATE sales SET quantity = ?, selling_price = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("idi", $quantity_sold, $total_sales, $id);
         $stmt->execute();
 
         // Update the product quantity
         $new_quantity = $product['quantity'] - $quantity_sold + $current_sales['quantity_sold'];
         $sql = "UPDATE inventory SET quantity = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("ii", $new_quantity, $product['id']);
         $stmt->execute();
 
-        $data = getSalesData($conn, $data->filter);
+        $data = getSalesData($conn2, $data->filter);
         echo json_encode($data);
     } elseif ($data->action === 'delete') {
-        $id = isset($data->id) ? mysqli_real_escape_string($conn, $data->id) : 0;
+        $id = isset($data->id) ? mysqli_real_escape_string($conn2, $data->id) : 0;
 
         if (!$id) {
             echo json_encode(['error' => 'Invalid input data']);
@@ -125,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Fetch the current sales record
         $sql = "SELECT * FROM sales WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -133,20 +122,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Delete the sales record
         $sql = "DELETE FROM sales WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
 
         // Update the product quantity
         $sql = "UPDATE inventory SET quantity = quantity + ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $conn2->prepare($sql);
         $stmt->bind_param("ii", $current_sales['quantity_sold'], $current_sales['item_id']);
         $stmt->execute();
 
-        $data = getSalesData($conn, $data->filter);
+        $data = getSalesData($conn2, $data->filter);
         echo json_encode($data);
     }
 }
 
-$conn->close();
+$conn2->close();
 ?>

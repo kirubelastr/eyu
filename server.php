@@ -1,16 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "myDB";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require 'db_connection.php';
 
 // Handle actions from the client
 $action = $_GET['action'];
@@ -31,13 +20,13 @@ switch ($action) {
 
 // Function to get combination data
 function getCombinationData() {
-    global $conn;
+    global $conn2;
 
     // Implement your logic to retrieve the combination data
 
     // Example SQL query (modify according to your database structure)
     $sql = "SELECT * FROM combinations";
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     $data = array();
 
@@ -52,13 +41,13 @@ function getCombinationData() {
 
 // Function to get inventory data
 function getInventoryData() {
-    global $conn;
+    global $conn2;
 
     // Implement your logic to retrieve the inventory data
 
     // Example SQL query (modify according to your database structure)
     $sql = "SELECT * FROM inventory";
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     $data = array();
 
@@ -73,13 +62,13 @@ function getInventoryData() {
 
 // Function to get sales and losses data
 function getSalesAndLossesData() {
-    global $conn;
+    global $conn2;
 
     // Implement your logic to retrieve the sales and losses data
 
     // Example SQL query (modify according to your database structure)
     $sql = "SELECT * FROM sales_and_losses";
-    $result = $conn->query($sql);
+    $result = $conn2->query($sql);
 
     $data = array();
 
@@ -93,5 +82,5 @@ function getSalesAndLossesData() {
 }
 
 
-$conn->close();
+$conn2->close();
 ?>

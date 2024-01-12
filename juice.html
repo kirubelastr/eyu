@@ -5,7 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <script src="sidebar.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.getJSON('check_session.php', function(data) {
+                if (!data.sessionSet) {
+                    window.location.href = 'login.html';
+                } else {
+                    // Update the button text with the session value
+                    $('#sidebarToggle').text('☰ ' + data.sessionValue);
+                }
+            });
+        });
+    </script>
     <title>Fruit Sales Inventory Management System</title>
     <style>
        body {
@@ -101,18 +114,16 @@
 </head>
 
 <body>
-
     <div id="sidebar">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-        <a href="index.html"id="Dashboardlink">Dashboard</a>
+        <a href="index.html" id="Dashboardlink">Dashboard</a>
         <a href="fruit.html" id="fruitLink">fruit</a>
         <a href="juice.html" id="juiceLink">juice</a>
         <a href="expence.html" id="expenceLink">expence</a>
         <a href="sales.html" id="salesLink">sales</a>
+        <button onclick="logout()">Logout</button>
     </div>
-  <div id="main">
-    <button id="sidebarToggle" onclick="openNav()">☰</button>
     <div id="main">
+        <button id="sidebarToggle" onclick="toggleNav()">☰</button>
         <div class="top-container">
         <section id="rawMaterialSection" class="card">
             <h2>Raw Materials</h2>
@@ -272,17 +283,6 @@
 
         // Call the function on page load
         setCurrentPageStyle();
-
-        function openNav() {
-            document.getElementById("sidebar").style.width = "250px";
-            document.getElementById("main").style.marginLeft = "250px";
-        }
-
-        function closeNav() {
-            document.getElementById("sidebar").style.width = "0";
-            document.getElementById("main").style.marginLeft = "0";
-        }
-       
         document.addEventListener("DOMContentLoaded", function () {
             loadInventory();
             displayInventory();

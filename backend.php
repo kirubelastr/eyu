@@ -1,15 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "inventory_db";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
+require 'db_connection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Return inventory data for display
     $inventory = getInventory();
