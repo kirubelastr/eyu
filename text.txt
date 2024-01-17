@@ -1,0 +1,21 @@
+<?php
+session_start(); // Start the session
+
+$servername = "localhost";
+$alternativeServername = "localhost:3307"; // Add your alternative server name here
+$username = "root";
+$password = "";
+
+// Check if the session is not set or is empty
+if(!isset($_SESSION['store']) || empty($_SESSION['store'])) {
+    header('Location: login.html');
+    exit(); // Make sure to exit after redirecting
+}
+
+if($_SESSION['store'] == 'store1') {
+    $dbname = "inventory_db";
+    $dbname2 = "mydb";
+} elseif($_SESSION['store'] == 'store2') {
+    $dbname = "second_inventory_db";
+    $dbname2 = "second_mydb";
+}
