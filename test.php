@@ -53,6 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 echo json_encode($response); // Echo the response array as a JSON string
-
+$conn->close();
 $conn2->close();
 ?>

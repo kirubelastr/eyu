@@ -85,12 +85,6 @@
             color: white;
         }
 
-        tbody {
-            display: block;
-            height: 300px; /* Adjust as needed */
-            overflow-y: auto;
-        }
-
         table thead, table tbody tr {
             display: table;
             width: 100%;
@@ -109,7 +103,7 @@
             max-height: 200px;
             overflow-y: auto;
         }
-        #popup { position: fixed; 
+        #popup2 { position: fixed; 
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%); 
@@ -118,6 +112,89 @@
             border: 1px solid #000; 
             display: none; 
         }
+      /* General table style */
+       /* General table style */
+       tbody {
+            display: block;
+            max-height: 300px; /* Set a maximum height */
+            overflow-y: auto; /* Add a scrollbar if the content exceeds the height */
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+        }
+
+        /* Popup table style */
+        #popup {
+            position: fixed;
+            width: 70%;
+            height: 70%;
+            top: 50%;
+            left: 30%;
+            margin-top: -200px;
+            margin-left: -250px;
+            background-color: rgb(179, 127, 238);
+            border: 5px solid #3c5664;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            display: none;
+            overflow: auto; /* Add this to make the popup scrollable */
+            z-index: 1000; 
+        }
+
+        #popup .table_container {
+            max-height: 100%; 
+            overflow: auto;
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+        }
+
+        #popup input[type="text"],
+        #popup input[type="number"] {
+            width: 70%;
+            margin-bottom: 1px;
+            padding: 5px;
+        }
+
+        #popup-controls {
+            margin-top: 3%;
+            display: flex;
+            justify-content: end;
+        }
+
+        #popup-controls button {
+            margin-left: 5px;
+        }
+
+        #popup-header {
+            height: 50px; /* Adjust as needed */
+        }
+
+        #popup-body {
+            height: auto; /* Adjust as needed */
+            margin-bottom: -10px; /* Adjust as needed */
+            overflow-y: auto; /* Add a scrollbar if the content exceeds the height */
+        }
+
+        /* Add a style for the table body */
+        #popup-body table {
+            width: 100%; /* Make the table take up the full width of the popup body */
+            border-collapse: collapse; /* Remove space between table cells */
+        }
+
+        #popup-body table th,
+        #popup-body table td {
+            border: 1px solid #ccc; /* Add a border to table cells */
+            padding: 5px; /* Add some padding to table cells */
+        }
+
+        #popup-body table tr:nth-child(even) {
+            background-color: #f2f2f2; /* Add a background color to even rows */
+        }
+
+        #popup tbody {
+            display: block;
+            height: auto; /* Set a small height using rem */
+            overflow-x: hidden; /* Hide horizontal scrollbar */
+        }
+
     </style>
 </head>
 
@@ -184,9 +261,11 @@
                 <thead>
                     <tr>
                         <th>combination name</th>
-                        <th>Row Materials</th>
-                        <th>Row Materials Quantity</th>
-                        <th>row materials selling price</th>
+                        <th>Raw Materials ID</th>
+                        <th>Raw Materials</th>
+                        <th>Raw Materials Quantity</th>
+                        <th>Raw materials selling price</th>
+                        <th>actions</th>
                     </tr>
                 </thead>
                 <tbody id="combinationTablebody">
@@ -194,6 +273,7 @@
                 </tbody>
             </table>
         </section>
+
 
         <section id="combinationSection" class="card">
             <h2>Combinations</h2>
@@ -269,18 +349,56 @@
     </div>
 
     </div>  
-    <div id="popup">
-        <label for="popup-id">ID</label>
-        <input id="popup-id" readonly>
-        <label for="popup-name">Name</label>
-        <input id="popup-name" type="text" pattern="\\D+" title="Please enter a string">
-        <label for="popup-quantity">Quantity</label>
-        <input id="popup-quantity" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
-        <label for="popup-price">Price</label>
-        <input id="popup-price" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
+    <div id="popup2">
+        <label for="popup2-id">ID</label>
+        <input id="popup2-id" readonly>
+        <label for="popup2-name">Name</label>
+        <input id="popup2-name" type="text" pattern="\\D+" title="Please enter a string">
+        <label for="popup2-quantity">Quantity</label>
+        <input id="popup2-quantity" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
+        <label for="popup2-price">Price</label>
+        <input id="popup2-price" type="number"required pattern="\\d+(\\.\\d+)?" title="Please enter a decimal number or integer">
         <button id="submitBtn">Submit</button>
         <button id="closeBtn">Close</button>
     </div>
+    <div id="popup" style="display: none;">
+        <div class="table_container">
+            <table id="popup-header">
+                <h2>Combination Details</h2>
+                <thead>
+                    <tr class="header-row"> <!-- Add class here -->
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>rowmatrials</th>
+                        <th>quantity</th>
+                        <th>price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="height: 1rem;"> <!-- Set a default height here -->
+                        <td><input id="popup-id" readonly></td>
+                        <td><input id="popup-name" type="text" pattern="\\D+" title="Please enter a string"></td>
+                        <td><input id="popup-Raw-material-ID" readonly></td>
+                        <td><input id="popup-Raw-material" readonly></td>
+                        <td><input id="popup-quantity" readonly></td>
+                        <td><input id="popup-price" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 style="margin-top: 1%;">Raw Material details</h2>
+        </div>
+        <div id="popup-body">
+            <!-- The data for each inventory in the combination will be added here dynamically -->
+        </div>
+        <div id="popup-controls">
+            <button id="addInventoryBtn">Add Inventory</button>
+            <button id="submitBtnpopupcombination">Submit</button>
+            <button id="closeBtnpopupcombination">Close</button>
+        </div>
+    </div>
+    
+    
+    
     <script>
         // Get the current page filename (e.g., "fruit.html")
         var currentPage = location.pathname.split("/").slice(-1)[0];
@@ -390,7 +508,6 @@ function handleResponse(section) {
         function loadCombinations() {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', 'get_combinations.php', true);
-
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var responseData = JSON.parse(xhr.responseText);
@@ -808,22 +925,412 @@ function sendDatal(section, data, callback) {
                 });
             }
         });
-        function displaycombinations() {
-                // Fetch combination data from the server/database
-                fetchcombinationData().then(function (combinationData) {
-                    // Display combination data in the table
-                    var combinationTableBody = document.getElementById("combinationTablebody");
-                    clearTable(combinationTableBody);
+        async function displaycombinations() {
+            // Fetch combination data from the server/database
+            const combinationData = await fetchcombinationData();
 
-                    combinationData.forEach(function (item) {
-                        var row = combinationTableBody.insertRow();
-                        row.insertCell(0).textContent = item.name;
-                        row.insertCell(1).textContent = item.rawMaterial;
-                        row.insertCell(2).textContent = item.quantity;
-                        row.insertCell(3).textContent = item.price;
-                    });
-                });
+            // Display combination data in the table
+            var combinationTableBody = document.getElementById("combinationTablebody");
+            clearTable(combinationTableBody);
+
+            combinationData.forEach(function (item) {
+                var row = combinationTableBody.insertRow();
+                var nameCell = row.insertCell(0);
+                var rawMaterialID = row.insertCell(1);
+                var rawMaterialCell = row.insertCell(2);
+                var quantityCell = row.insertCell(3);
+                var priceCell = row.insertCell(4);
+
+                // Create text fields
+                nameCell.textContent = item.name;
+                rawMaterialID.textContent=item.rowID;
+                rawMaterialCell.textContent = item.rawMaterial;
+                quantityCell.textContent = item.quantity;
+                priceCell.textContent = item.price;
+
+                // Create edit button for each row
+                var editButton = document.createElement("button");
+                editButton.textContent = "Edit";
+                editButton.onclick = function () {
+                    handleEdit(item);
+                };
+                row.appendChild(editButton);
+            });
         }
+
+async function handleEdit(item) {
+    // Fetch the combination data for the item
+    const response = await fetch('edit_combination.php?identifier=fetchCombinationData&id=' + item.id);
+    const data = await response.json();
+    
+    // Now you have the combination data and the corresponding inventory data
+    // You can use this data to populate the fields in your popup
+    document.getElementById("popup-id").value = data.combinationData.id;
+    var nameInput = document.getElementById("popup-name");
+    nameInput.value = data.combinationData.name;
+    var rowmaterialsID = document.getElementById("popup-Raw-material-ID");
+    rowmaterialsID.value = data.combinationData.rowID;
+    var rowmaterials = document.getElementById("popup-Raw-material");
+    rowmaterials.value = data.combinationData.rawMaterial;
+    var quan = document.getElementById("popup-quantity");
+    quan.value = data.combinationData.quantity;
+    var pri = document.getElementById("popup-price");
+    pri.value = data.combinationData.price;
+
+    // Clear any existing fields in the popup
+    var popupBody = document.getElementById("popup-body");
+    while (popupBody.firstChild) {
+        popupBody.removeChild(popupBody.firstChild);
+    }
+
+    // Create a table for displaying row materials, quantities, and prices
+    var table = document.createElement("table");
+
+    // Create a row for the header
+    var headerRow = table.insertRow();
+    var headerMaterialID = headerRow.insertCell(0);
+    headerMaterialID.textContent = "MaterialsID";
+    var headerMaterial = headerRow.insertCell(1);
+    headerMaterial.textContent = "Materials";
+    var headerQuantity = headerRow.insertCell(2);
+    headerQuantity.textContent = "Quantities";
+    var headerPrice = headerRow.insertCell(3);
+    headerPrice.textContent = "Prices";
+    var headerAction = headerRow.insertCell(4);
+    headerAction.textContent = "Action";
+
+    // Split row materials, quantities, and prices by comma
+    var MaterialsID = data.combinationData.rowID.split(',');
+    var materials = data.combinationData.rawMaterial.split(',');
+    var quantities = data.combinationData.quantity.split(',');
+    var prices = data.combinationData.price.split(',');
+
+    // Create rows for each material, quantity, and price combination
+    for (var i = 0; i < materials.length; i++) {
+        var row = table.insertRow();
+        var materialIDCell = row.insertCell(0);
+        materialIDCell.textContent = MaterialsID[i];
+        var materialCell = row.insertCell(1);
+        materialCell.textContent = materials[i];
+        var quantityCell = row.insertCell(2);
+        var quantityInput = document.createElement("input");
+        quantityInput.type = "number"; 
+        quantityInput.value = quantities[i];
+        quantityInput.style.width = "50px";
+        quantityCell.appendChild(quantityInput);
+        var priceCell = row.insertCell(3);
+        var priceInput = document.createElement("input");
+        priceInput.type = "number"; 
+        priceInput.value = prices[i];
+        priceInput.style.width = "50px";
+        priceCell.appendChild(priceInput);
+
+
+        var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function () {
+                    // Delete the corresponding row
+                    var confirmDelete = confirm("Are you sure you want to delete this row?");
+                    if (confirmDelete) {
+                        this.parentNode.parentNode.remove();
+                    }
+                };
+        var actionCell = row.insertCell(4);
+        actionCell.appendChild(deleteButton);
+
+    }
+
+    popupBody.appendChild(table);
+    document.getElementById('submitBtnpopupcombination').addEventListener('click', async function() {
+    // Validate and update data
+    if (table.rows.length === 1) {
+        alert("There must be at least one row to update the database.");
+        return;
+    }
+
+    const updatedData = Array.from(table.rows).slice(1).reduce((acc, row) => {
+        acc.rowID.push(row.cells[0].textContent);
+        acc.rawMaterial.push(row.cells[1].textContent);
+        acc.quantity.push(row.cells[2].querySelector('input').value);
+        acc.price.push(row.cells[3].querySelector('input').value);
+        return acc;
+    }, {rowID: [], rawMaterial: [], quantity: [], price: []});
+
+    updatedData.id = [document.getElementById("popup-id").value];
+    updatedData.name = [nameInput.value];
+
+    console.log("Data to be sent:", updatedData);
+
+    try {
+        const response = await fetch('edit_combination.php', {
+            method: 'POST',
+            body: JSON.stringify(updatedData),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const responseBody = await response.text();
+
+        if (response.headers.get('content-type').indexOf('application/json') !== -1) {
+            const jsonResponse = JSON.parse(responseBody);
+            if (jsonResponse.message) {
+                alert('Record updated successfully');
+                
+                loadCombinations();
+                displaycombinations();
+            } else if (jsonResponse.error) {
+                alert('Error updating record: ' + jsonResponse.error);
+            }
+        } else {
+            console.log('Non-JSON Response:', responseBody);
+        }
+    } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+    }
+});
+
+// Show the popup
+document.getElementById("popup").style.display = "block";
+
+}
+
+function deleteRow(rowIndex) {
+    var table = document.getElementById("popup-body").getElementsByTagName('table')[0];
+    table.deleteRow(rowIndex);
+}
+
+    // Show the popup
+document.getElementById('addInventoryBtn').addEventListener('click', function() {
+    // Fetch all the inventory data from the server
+    fetch('edit_combination.php?identifier=fetchAllInventoryData')
+    .then(response => response.json())
+    .then(function(inventoryData) {
+        // Create a second popup with a dropdown list
+        var secondPopup = document.createElement("div");
+        secondPopup.id = "secondPopup";
+        secondPopup.style.position = "fixed";
+        secondPopup.style.top = "50%";
+        secondPopup.style.left = "50%";
+        secondPopup.style.transform = "translate(-50%, -50%)";
+        secondPopup.style.backgroundColor = "#f8f9fa";
+        secondPopup.style.borderRadius = "5px";
+        secondPopup.style.boxShadow = "0 2px 10px rgba(0, 0, 0, 0.1)";
+        secondPopup.style.padding = "20px";
+        secondPopup.style.zIndex = "1000";
+        var dropdown = document.createElement("select");
+        dropdown.id = "inventoryDropdown";
+        dropdown.style.width = "100%";
+        dropdown.style.marginBottom = "10px";
+        for (var i = 0; i < inventoryData.length; i++) {
+            var option = document.createElement("option");
+            option.value = inventoryData[i].id;
+            option.text = inventoryData[i].name;
+            dropdown.appendChild(option);
+        }
+        secondPopup.appendChild(dropdown);
+
+        // Create elements to display the quantity and price
+        var quantityDisplay = document.createElement("p");
+        quantityDisplay.id = "quantityDisplay";
+        secondPopup.appendChild(quantityDisplay);
+
+        var priceDisplay = document.createElement("p");
+        priceDisplay.id = "priceDisplay";
+        secondPopup.appendChild(priceDisplay);
+
+        // Update the display when a different item is selected
+        dropdown.addEventListener('change', function() {
+            var selectedOption = dropdown.options[dropdown.selectedIndex];
+            quantityDisplay.textContent = "Quantity: " + inventoryData[selectedOption.index].quantity;
+            priceDisplay.textContent = "Price: " + inventoryData[selectedOption.index].price;
+        });
+
+        // Trigger the change event to display the quantity and price of the initially selected item
+        dropdown.dispatchEvent(new Event('change'));
+
+        // Create input fields for quantity and price
+        var quantityInput = document.createElement("input");
+        quantityInput.id = "quantityInput";
+        quantityInput.type = "number"; // Set the type to "number"
+        quantityInput.placeholder = "Enter quantity";
+        quantityInput.style.width = "100%";
+        quantityInput.style.marginBottom = "10px";
+        secondPopup.appendChild(quantityInput);
+
+        var priceInput = document.createElement("input");
+        priceInput.id = "priceInput";
+        priceInput.type = "number"; // Set the type to "number"
+        priceInput.placeholder = "Enter price";
+        priceInput.style.width = "100%";
+        priceInput.style.marginBottom = "10px";
+        secondPopup.appendChild(priceInput);
+
+        // Create a table to display the added inventories
+        var inventoryTable = document.createElement("table");
+        inventoryTable.id = "inventoryTable";
+        inventoryTable.style.width = "100%";
+        inventoryTable.style.borderCollapse = "collapse";
+        inventoryTable.style.marginBottom = "10px";
+        secondPopup.appendChild(inventoryTable);
+        // Create an "Add" button to add the selected inventory to the table
+        var addButton = document.createElement("button");
+        addButton.textContent = "Add";
+        addButton.style.marginRight = "10px";
+        addButton.addEventListener('click', function() {
+            // Check if the quantity and price inputs are filled
+            if (quantityInput.value && priceInput.value) {
+                var selectedOption = dropdown.options[dropdown.selectedIndex];
+                var row = inventoryTable.insertRow();
+                var cell0 = row.insertCell(0);
+                cell0.textContent = selectedOption.value;
+                var cell1 = row.insertCell(1);
+                cell1.textContent = selectedOption.text;
+                var cell2 = row.insertCell(2);
+                cell2.textContent = quantityInput.value;
+                var cell3 = row.insertCell(3);
+                cell3.textContent = priceInput.value;
+                // Add some styles to the table cells
+                cell0.style.border = "1px solid #dee2e6";
+                cell0.style.padding = "8px";
+                cell1.style.border = "1px solid #dee2e6";
+                cell1.style.padding = "8px";
+                cell2.style.border = "1px solid #dee2e6";
+                cell2.style.padding = "8px";
+                cell3.style.border = "1px solid #dee2e6";
+                cell3.style.padding = "8px";
+                
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = function () {
+                    // Delete the corresponding row
+                    var confirmDelete = confirm("Are you sure you want to delete this row?");
+                    if (confirmDelete) {
+                        this.parentNode.parentNode.remove();
+                    }
+                };
+
+                var actionCell = row.insertCell(4);
+                actionCell.appendChild(deleteButton);
+
+                // Clear the quantity and price inputs
+                quantityInput.value = '';
+                priceInput.value = '';
+            } else {
+                alert("Please fill in both the quantity and price.");
+            }
+        });
+        secondPopup.appendChild(addButton);
+
+            // Create a "Submit" button to send the data to the previous popup table
+            var submitButton = document.createElement("button");
+            submitButton.textContent = "Submit";
+            submitButton.style.marginRight = "10px";
+            submitButton.addEventListener('click', function() {
+            var rows = inventoryTable.getElementsByTagName("tr");
+            for (var i = 0; i < rows.length; i++) {
+                // Get the data from the table row
+                var rowData = [];
+                for (var j = 0; j < rows[i].cells.length - 1; j++) { // Exclude the last cell data
+                    rowData.push(rows[i].cells[j].textContent);
+                }
+
+                // Create a new row in the previous popup table
+                var table = document.getElementById("popup-body").getElementsByTagName('table')[0];
+                var row = table.insertRow();
+
+                // Add ID and name cells
+                for (var j = 0; j < 2; j++) {
+                    var cell = row.insertCell();
+                    cell.textContent = rowData[j];
+                    // Add some styles to the table cells
+                    cell.style.border = "1px solid #dee2e6";
+                    cell.style.padding = "8px";
+                }
+
+                // Create a quantity input cell
+                var quantityCell = row.insertCell();
+                var quantityInput = document.createElement("input");
+                quantityInput.type = "number";
+                quantityInput.min = "0";
+                quantityInput.required = true;
+                quantityInput.value = rowData[2]; // Pre-fill with existing quantity
+                quantityInput.style.width = "50px";
+                quantityCell.appendChild(quantityInput);
+
+                // Create a price input cell
+                var priceCell = row.insertCell();
+                var priceInput = document.createElement("input");
+                priceInput.type = "number";
+                priceInput.min = "0";
+                priceInput.required = true;
+                priceInput.value = rowData[3]; // Pre-fill with existing price
+                priceInput.style.width = "50px";
+                priceCell.appendChild(priceInput);
+
+                // Create a delete button cell
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.style.cssText = "background-color: #f44336; /* Red */ color: white; border: none; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;";
+                deleteButton.onclick = function () {
+                    // Delete the corresponding row
+                    this.parentNode.parentNode.remove();
+                };
+                var actionCell = row.insertCell();
+                actionCell.appendChild(deleteButton);
+            }
+
+            // Close the second popup
+            secondPopup.style.display = "none";
+        });
+
+
+
+    secondPopup.appendChild(submitButton);
+            // Create a "Close" button to close the second popup
+            var closeButton = document.createElement("button");
+            closeButton.textContent = "Close";
+            closeButton.addEventListener('click', function() {
+                secondPopup.style.display = "none";
+            });
+            secondPopup.appendChild(closeButton);
+
+            // Add the second popup to the body of the page
+            document.body.appendChild(secondPopup);
+
+            // Show the second popup
+            secondPopup.style.display = "block";
+        });
+    });
+
+        async function deleteRow(material) {
+            const confirmDelete = confirm("Are you sure you want to delete this row?");
+            
+            if (confirmDelete) {
+                // Remove the row from the table
+                var table = document.getElementById("popup-body").getElementsByTagName('table')[0];
+                var rows = table.getElementsByTagName('tr');
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].getElementsByTagName('td')[0].textContent === material) {
+                        table.deleteRow(i);
+                        break;
+                    }
+                }
+
+                // Your existing code to delete the row from the database...
+            }
+        }
+        document.getElementById('closeBtnpopupcombination').addEventListener('click', function() {
+            document.getElementById("popup").style.display = "none";
+        });
+
+
+
+
         function displayInventory() {
     // Fetch inventory data from the server/database
     fetchInventoryData().then(function (inventoryData) {
@@ -862,13 +1369,13 @@ function sendDatal(section, data, callback) {
 
 function createPopup(row, route) {
     // Get the pop-up div
-    var popup = document.getElementById('popup');
+    var popup = document.getElementById('popup2');
 
     // Fill the inputs with the row's data
-    document.getElementById('popup-id').value = row.cells[0].textContent;
-    document.getElementById('popup-name').value = row.cells[1].textContent;
-    document.getElementById('popup-quantity').value = row.cells[2].textContent;
-    document.getElementById('popup-price').value = row.cells[3].textContent;
+    document.getElementById('popup2-id').value = row.cells[0].textContent;
+    document.getElementById('popup2-name').value = row.cells[1].textContent;
+    document.getElementById('popup2-quantity').value = row.cells[2].textContent;
+    document.getElementById('popup2-price').value = row.cells[3].textContent;
 
     // Show the pop-up
     popup.style.display = 'block';
@@ -882,10 +1389,10 @@ function createPopup(row, route) {
     // When the submit button is clicked
     document.getElementById('submitBtn').onclick = function() {
         // Check the data type and the data
-        var id = document.getElementById('popup-id').value;
-        var name = document.getElementById('popup-name').value;
-        var quantity = document.getElementById('popup-quantity').value;
-        var price = document.getElementById('popup-price').value;
+        var id = document.getElementById('popup2-id').value;
+        var name = document.getElementById('popup2-name').value;
+        var quantity = document.getElementById('popup2-quantity').value;
+        var price = document.getElementById('popup2-price').value;
         if (name === "" || isNaN(quantity) || isNaN(price)) {
             alert('Invalid input');
             return;

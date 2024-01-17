@@ -61,6 +61,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     echo json_encode(["expenseTypes" => $expenseTypes]);
 }
 
-// Close the database connection
 $conn->close();
+$conn2->close();
 ?>

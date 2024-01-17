@@ -138,4 +138,6 @@ header('Content-Type: application/json');
 
 // Print the JSON-encoded data
 echo json_encode($data);
+$conn->close();
+$conn2->close();
 ?>

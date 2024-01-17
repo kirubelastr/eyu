@@ -75,6 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode(["error" => "No data received or invalid data format"]);
     }
 }
-
+$conn->close();
 $conn2->close();
 ?>

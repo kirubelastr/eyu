@@ -215,4 +215,6 @@ function isValidQuantity($quantity) {
 function isValidPrice($price) {
     return $price > 0;
 }
+$conn->close();
+$conn2->close();
 ?>

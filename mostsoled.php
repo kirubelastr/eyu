@@ -40,4 +40,6 @@ $data = array(
 
 // Print the JSON-encoded data
 print json_encode($data);
+$conn->close();
+$conn2->close();
 ?>

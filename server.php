@@ -81,6 +81,6 @@ function getSalesAndLossesData() {
     echo json_encode($data);
 }
 
-
+$conn->close();
 $conn2->close();
 ?>

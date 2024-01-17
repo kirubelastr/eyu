@@ -40,6 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         echo json_encode(["dailyExpenses" => $dailyExpenses, "weeklyExpenses" => $weeklyExpenses, "monthlyExpenses" => $monthlyExpenses]);
     }
 }
-
 $conn->close();
+$conn2->close();
 ?>
