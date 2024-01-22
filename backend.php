@@ -53,7 +53,7 @@ function getInventory() {
 function handleProductSection() {
     // Add item to the inventory
     $itemName = sanitizeInput($_POST['itemName']);
-    $quantity = (int)$_POST['quantity'];
+    $quantity = (float)$_POST['quantity'];
     $price = (float)$_POST['price'];
 
     if (isValidQuantity($quantity) && isValidPrice($price)) {
@@ -66,7 +66,7 @@ function handleProductSection() {
 function handleLossesSection() {
     // Record losses
     $productId = (int)$_POST['productId'];
-    $quantityLost = (int)$_POST['quantityLost'];
+    $quantityLost = (float)$_POST['quantityLost'];
     $reason = sanitizeInput($_POST['reason']);
 
     if (isValidQuantity($quantityLost)) {
@@ -79,7 +79,7 @@ function handleLossesSection() {
 function handleSalesSection() {
     // Record sales
     $productId = (int)$_POST['productId'];
-    $quantitySold = (int)$_POST['quantitySold'];
+    $quantitySold = (float)$_POST['quantitySold'];
     $sellingprice = (float)$_POST['sellingprice'];
 
     if (isValidQuantity($quantitySold) && isValidPrice($sellingprice)) {
@@ -101,9 +101,9 @@ function addItem($itemName, $quantity, $price) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sid", $itemName, $quantity, $price);
     
-    $sql = "INSERT INTO product_inventory (name, quantity, price) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sid", $itemName, $quantity, $price);
+    // $sql = "INSERT INTO product_inventory (name, quantity, price) VALUES (?, ?, ?)";
+    // $stmt = $conn->prepare($sql);
+    // $stmt->bind_param("sid", $itemName, $quantity, $price);
 
     if ($stmt->execute()) {
         echo json_encode(array('status' => 'success', 'message' => 'Item added successfully.'));
@@ -113,9 +113,11 @@ function addItem($itemName, $quantity, $price) {
 
     $stmt->close();
 }
-
 function recordLosses($productId, $quantityLost, $reason) {
     global $conn;
+
+    // Convert quantityLost to a float
+    $quantityLost = floatval($quantityLost);
 
     // Check if there is enough quantity to lose
     $checkQuantity = "SELECT quantity FROM products WHERE id = ?";
@@ -127,21 +129,22 @@ function recordLosses($productId, $quantityLost, $reason) {
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $currentQuantity = $row['quantity'];
+        // Convert currentQuantity to a float
+        $currentQuantity = floatval($row['quantity']);
 
         if ($currentQuantity >= $quantityLost) {
             // Deduct lost quantity from inventory
             $newQuantity = $currentQuantity - $quantityLost;
             $updateQuantity = "UPDATE products SET quantity = ? WHERE id = ?";
             $stmt = $conn->prepare($updateQuantity);
-            $stmt->bind_param("ii", $newQuantity, $productId);
+            $stmt->bind_param("di", $newQuantity, $productId);  // Use "d" for double (float) parameters
             $stmt->execute();
             $stmt->close();
 
             // Record the loss
             $recordLoss = "INSERT INTO losses (product_id, quantity_lost, reason) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($recordLoss);
-            $stmt->bind_param("iis", $productId, $quantityLost, $reason);
+            $stmt->bind_param("ids", $productId, $quantityLost, $reason);  // Use "d" for double (float) parameters
 
             if ($stmt->execute()) {
                 echo json_encode(array('status' => 'success', 'message' => 'Loss recorded successfully.'));
@@ -157,9 +160,12 @@ function recordLosses($productId, $quantityLost, $reason) {
         echo json_encode(array('status' => 'error', 'message' => 'Product not found.'));
     }
 }
-
 function recordSales($productId, $quantitySold, $sellingprice) {
     global $conn;
+
+    // Convert quantitySold and sellingprice to float
+    $quantitySold = floatval($quantitySold);
+    $sellingprice = floatval($sellingprice);
 
     // Check if there is enough quantity to sell
     $checkQuantity = "SELECT quantity, price FROM products WHERE id = ?";
@@ -171,15 +177,15 @@ function recordSales($productId, $quantitySold, $sellingprice) {
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $currentQuantity = $row['quantity'];
-        $currentPrice = $row['price'];
+        $currentQuantity = floatval($row['quantity']);
+        $currentPrice = floatval($row['price']);
 
-        if ($currentQuantity >= $quantitySold && $currentPrice <= $sellingprice) {
+        if ($currentQuantity >= $quantitySold ) {
             // Deduct sold quantity from inventory
             $newQuantity = $currentQuantity - $quantitySold;
             $updateQuantity = "UPDATE products SET quantity = ? WHERE id = ?";
             $stmt = $conn->prepare($updateQuantity);
-            $stmt->bind_param("ii", $newQuantity, $productId);
+            $stmt->bind_param("di", $newQuantity, $productId); // 'd' is used for double which can also represent float
             $stmt->execute();
             $stmt->close();
 
@@ -187,7 +193,7 @@ function recordSales($productId, $quantitySold, $sellingprice) {
             $totalPrice = $sellingprice;
             $recordSale = "INSERT INTO sales (product_id, quantity_sold, total_price) VALUES (?, ?, ?)";
             $stmt = $conn->prepare($recordSale);
-            $stmt->bind_param("iid", $productId, $quantitySold, $totalPrice);
+            $stmt->bind_param("idd", $productId, $quantitySold, $totalPrice); // 'd' is used for double which can also represent float
 
             if ($stmt->execute()) {
                 echo json_encode(array('status' => 'success', 'message' => 'Sale recorded successfully.'));
@@ -203,6 +209,7 @@ function recordSales($productId, $quantitySold, $sellingprice) {
         echo json_encode(array('status' => 'error', 'message' => 'Product not found.'));
     }
 }
+
 
 function sanitizeInput($input) {
     return htmlspecialchars(strip_tags(trim($input)));

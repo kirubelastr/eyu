@@ -249,7 +249,7 @@
                 <label for="avalQuantity">available Quantity:</label>
                 <input type="number" id="avalQuantity" readonly>
                 <label for="lossQuantity">Quantity:</label>
-                <input type="number" id="lossQuantity" required>
+                <input type="number" step="0.001" id="lossQuantity" required>
                 <label for="lossReason">Reason:</label>
                 <input type="text" id="lossReason" required>
                 <button type="submit"onclick="recordLoss()">Record Loss</button>
@@ -560,7 +560,7 @@ function handleResponse(section) {
                 console.log('Sending data:', data);
                 sendDatas('sellItem', data, function (responseData) {
                     // Handle the server's response
-                    console.log("Server response:", responseData);
+                    alert("Server response:", responseData);
                     // Perform additional actions based on the response
                 });
             }
@@ -657,15 +657,10 @@ function recordLoss() {
     var lossReason = document.getElementById('lossReason').value;
     var maxq = document.getElementById('avalQuantity').value;
 
-    if (!rowid || !quantity || !lossReason || !maxq  || quantity == 0 || maxq == 0) {
+    if (!rowid || !quantity || !lossReason || !maxq ) {
        alert("Inputs cannot be empty or 0.");
         return; // Exit the function
-    }
-
-    if (maxq < quantity) {
-        alert('The quantity being inserted is greater than the available quantity.');
-        return; // Exit the function
-    } else {
+    }else {
         console.log('trying:');
         var data = {
             rowid: rowid,
@@ -675,13 +670,13 @@ function recordLoss() {
         console.log('Sending data:', data);
         sendDatal('lossitem', data, function (responseData) {
             // Handle the server's response
-            console.log("Server response:", responseData);
+            alert("Server response:", responseData);
             // Perform additional actions based on the response
             loadLossesDropdown(); // Reload the dropdown after recording the loss
+            fetchInventory();
         });
     }
 }
-
 function sendDatal(section, data, callback) {
     console.log('Sending data:', data);
 
@@ -698,11 +693,15 @@ function sendDatal(section, data, callback) {
             if (xhr.status == 200) {
                 // Parse and process the response data
                 var responseData = JSON.parse(xhr.responseText);
-                // Additional logic to populate the dropdown options
-                callback(responseData);
+                if (responseData.dbUpdate == "success") {
+                    confirm("Success: Data sent and database updated successfully! Click OK to continue.");
+                } else if (responseData.dbUpdate == "failure") {
+                    confirm("Failure: Data sent but database update failed. Click OK to continue.");
+                }
             } else {
                 // Handle error cases
                 console.error('Error in AJAX request:', xhr.status);
+                confirm("Failure: Error in AJAX request - " + xhr.status + ". Click OK to continue.");
             }
         }
     };
@@ -710,6 +709,7 @@ function sendDatal(section, data, callback) {
     var jsonData = JSON.stringify(data);
     xhr.send(jsonData);
 }
+
 
 /////////////////////////////////////////////////////
 

@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `expenses`
 --
 
-CREATE TABLE `expenses` (
+CREATE TABLE `expenses2` (
   `ExpenseID` int(11) NOT NULL,
   `ExpenseType` varchar(100) DEFAULT NULL,
   `ExpenseReason` varchar(255) DEFAULT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE `expenses` (
 -- Dumping data for table `expenses`
 --
 
-INSERT INTO `expenses` (`ExpenseID`, `ExpenseType`, `ExpenseReason`, `ExpenseDate`, `TotalCost`) VALUES
+INSERT INTO `expenses2` (`ExpenseID`, `ExpenseType`, `ExpenseReason`, `ExpenseDate`, `TotalCost`) VALUES
 (2, 'transportation', 'wezader', '2024-01-10', 1510.00);
 
 -- --------------------------------------------------------
@@ -173,7 +173,7 @@ INSERT INTO `sales` (`id`, `product_id`, `quantity_sold`, `total_price`, `create
 --
 -- Indexes for table `expenses`
 --
-ALTER TABLE `expenses`
+ALTER TABLE `expenses2`
   ADD PRIMARY KEY (`ExpenseID`);
 
 --
@@ -215,7 +215,7 @@ ALTER TABLE `sales`
 --
 -- AUTO_INCREMENT for table `expenses`
 --
-ALTER TABLE `expenses`
+ALTER TABLE `expenses2`
   MODIFY `ExpenseID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --

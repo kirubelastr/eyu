@@ -137,7 +137,10 @@
             transform: scale(1.05); /* Add a zoom effect on hover */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Add a shadow effect on hover */
         }
-
+        [data-placeholder]:empty:before {
+            content: attr(data-placeholder);
+            color: #888;
+        }
     </style>
 </head>
 
@@ -163,157 +166,171 @@
                         <h1>GENERAL</h1>
                         <div id="inventory-db-results">
                             <!-- The results will be inserted here -->
-                            <div id="totalS" class="card"></div>
-                            <div id="totalL" class="card"></div>
-                            <div id="totalC" class="card"></div>
-                            <div id="totalp" class="card"></div>
-                            <div id="totalExpenses" class="card"></div>
-                            <div id="totalnet" class="card"></div>
-                        </div>
-                    </div>
-                </div>            
-            </div>
-                <div class="dashboard-container">
-                    <div class="shop-container" id="fruit-shop">
-                        <div id="inventory-db-results">
-                        <h1>fruit shope general</h1>
-                        <!-- The results will be inserted here -->
-                        <div id="totalSales" class="card"></div>
-                        <div id="totalLosses" class="card"></div>
-                        <div id="totalCapital" class="card"></div>
-                        <div id="totalprofit" class="card"></div>
-                        <div id="net" class="card"></div>
-                        </div>
-                         </div>
-                         <div class="shop-container" id="juice-shop">
-                        <div id="inventory-db-results">
-                        <h1>juice shope general</h1>
-                        <!-- The results will be inserted here -->
-                        <div id="totalSalesj" class="card"></div>
-                        <div id="totalLossesj" class="card"></div>
-                        <div id="totalCapitalj" class="card"></div>
-                        <div id="totalprofitj" class="card"></div>
-                        <div id="netj" class="card"></div>
+                            <div id="totalS" class="card" data-placeholder="Total Sales"></div>
+                            <div id="totalL" class="card" data-placeholder="Total Losses"></div>
+                            <div id="totalC" class="card" data-placeholder="Total Capital"></div>
+                            <div id="totalp" class="card" data-placeholder="Total profit"></div>
+                            <div id="totalExpenses" class="card" data-placeholder="Total Expenses"></div>
+                            <div id="totalnet" class="card" data-placeholder="Total Net"></div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="dashboard-container">
+                <div class="shop-container" id="fruit-shop">
+                    <div id="inventory-db-results">
+                        <h1>fruit shope general</h1>
+                        <!-- The results will be inserted here -->
+                        <div id="totalSales" class="card" data-placeholder="Fruit Sales"></div>
+                        <div id="totalLosses" class="card" data-placeholder="Fruit Losses"></div>
+                        <div id="totalCapital" class="card" data-placeholder="Fruit Capital"></div>
+                        <div id="totalprofit" class="card" data-placeholder="Fruit profit"></div>
+                        <div id="net" class="card" data-placeholder="Fruit Net"></div>
+                    </div>
+                </div>
+                <div class="shop-container" id="juice-shop">
+                    <div id="inventory-db-results">
+                        <h1>juice shope general</h1>
+                        <!-- The results will be inserted here -->
+                        <div id="totalSalesj" class="card" data-placeholder="Juice Sales"></div>
+                        <div id="totalLossesj" class="card" data-placeholder="Juice Losses"></div>
+                        <div id="totalCapitalj" class="card" data-placeholder="Juice Capital"></div>
+                        <div id="totalprofitj" class="card" data-placeholder="Juice profit"></div>
+                        <div id="netj" class="card" data-placeholder="Juice Net"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <script>
-        // script.js
-    
-        // Get the current page filename (e.g., "fruit.html")
-        var currentPage = location.pathname.split("/").slice(-1)[0];
-    
-        // Function to set the background color and disable the link for the current page
-        function setCurrentPageStyle() {
-            var navLinks = document.querySelectorAll("#sidebar a");
 
-            // Reset styles for all links
-            navLinks.forEach(function (link) {
-                link.style.backgroundColor = "";
-                link.style.pointerEvents = "auto";
-            });
+        <script>
+            // Get the current page filename (e.g., "fruit.html")
+            var currentPage = location.pathname.split("/").slice(-1)[0];
 
-            // Set styles for the current page
-            if (currentPage === "index.html") {
-                Dashboardlink.style.backgroundColor = "green";
-                Dashboardlink.style.pointerEvents = "none"; // Disable the link
-            }
-        }
-    
-        // Call the function on page load
-        setCurrentPageStyle();
-        fetch('dash.php')
-    .then(response => response.json())
-    .then(data => {
-        // Handle Expenses Data
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const colors = data.expenses.map(() => '#' + Math.floor(Math.random() * 16777215).toString(16));
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: data.expenses.map(item => item.ExpenseType),
-                datasets: [{
-                    data: data.expenses.map(item => item.total_cost),
-                    backgroundColor: colors,
-                    borderColor: colors,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                tooltips: {
-                    callbacks: {
-                        label: function(tooltipItem, data) {
-                            let dataset = data.datasets[tooltipItem.datasetIndex];
-                            let total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
-                                return previousValue + currentValue;
-                            });
-                            let currentValue = dataset.data[tooltipItem.index];
-                            let percentage = Math.floor(((currentValue/total) * 100)+0.5);         
-                            return data.labels[tooltipItem.index] + ": " + percentage + "%";
-                        }
-                    }
-                },
-                animation: {
-                    onComplete: function () {
-                        if(this.chart !== undefined) {
-                            let ctx = this.chart.ctx;
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-                            let chart = this;
-                            let datasets = this.config.data.datasets;
+            // Function to set the background color and disable the link for the current page
+            function setCurrentPageStyle() {
+                var navLinks = document.querySelectorAll("#sidebar a");
 
-                            datasets.forEach(function (dataset, i) {
-                                ctx.font = chart.width / 100 + 'em sans-serif';
-                                ctx.fillStyle = '#fff';
+                // Reset styles for all links
+                navLinks.forEach(function (link) {
+                    link.style.backgroundColor = "";
+                    link.style.pointerEvents = "auto";
+                });
 
-                                chart.getDatasetMeta(i).data.forEach(function (p, j) {
-                                    if(datasets[i].data[j] > 0) {
-                                        let value = datasets[i].data[j];
-                                        let total = datasets[i].data.reduce((a, b) => a + b, 0);
-                                        let percentage = Math.round((value / total) * 100);
-                                        ctx.fillText(percentage + '%', p._model.x, p._model.y);
-                                    }
-                                });
-                            });
-                        }
-                    }
+                // Set styles for the current page
+                if (currentPage === "index.html") {
+                    Dashboardlink.style.backgroundColor = "green";
+                    Dashboardlink.style.pointerEvents = "none"; // Disable the link
                 }
             }
-        });
 
+            // Call the function on page load
+            setCurrentPageStyle();
 
-        // Handle Totals Data fruit
-        document.getElementById('totalSales').innerHTML = '<h2>Fruit Sales</h2><p>' + data.totals.total_sales + '</p>';
-        document.getElementById('totalLosses').innerHTML = '<h2>Fruit Losses</h2><p>' + data.totals.total_losses + '</p>';
-        document.getElementById('totalCapital').innerHTML = '<h2>Fruit Capital</h2><p>' + data.totals.total_capital + '</p>';
-        document.getElementById('totalprofit').innerHTML = '<h2>Fruit profit</h2><p>' + data.totals.total_difference + '</p>';
-        document.getElementById('net').innerHTML = '<h2>Fruit Net</h2><p>' + data.totals.net + '</p>';
-         // Handle Totals Data juice
-         document.getElementById('totalSalesj').innerHTML = '<h2>Juice Sales</h2><p>' + data.totalsj.total_salesj + '</p>';
-        document.getElementById('totalLossesj').innerHTML = '<h2>Juice Losses</h2><p>' + data.totalsj.total_lossesj + '</p>';
-        document.getElementById('totalCapitalj').innerHTML = '<h2>Juice Capital</h2><p>' + data.totalsj.total_capitalj + '</p>';
-        document.getElementById('totalprofitj').innerHTML = '<h2>Juice profit</h2><p>' + data.totalsj.total_differencej + '</p>';
-        document.getElementById('netj').innerHTML = '<h2>Juice Net</h2><p>' + data.totalsj.netj + '</p>';
-        // Handle Totals Data
-        document.getElementById('totalS').innerHTML = '<h2>Total Sales</h2><p>' + (Number(data.totals.total_sales) + Number(data.totalsj.total_salesj)) + '</p>';
-        document.getElementById('totalL').innerHTML = '<h2>Total Losses</h2><p>' + (Number(data.totals.total_losses) + Number(data.totalsj.total_lossesj)) + '</p>';
-        document.getElementById('totalC').innerHTML = '<h2>Total Capital</h2><p>' + (Number(data.totals.total_capital) + Number(data.totalsj.total_capitalj)) + '</p>';
-        document.getElementById('totalp').innerHTML = '<h2>Total profit</h2><p>' + (Number(data.totals.total_difference) + Number(data.totalsj.total_differencej)) + '</p>';
-       
-        let total_expenses = data.expenses.reduce((total, expense) => total + Number(expense.total_cost), 0);
-         // Display total expenses
-        document.getElementById('totalExpenses').innerHTML = '<h2>Total Expenses</h2><p>' + total_expenses + '</p>';
+            fetch('dash.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Handle Expenses Data
+                    const ctx = document.getElementById('myChart').getContext('2d');
+                    const colors = data.expenses.map(() => '#' + Math.floor(Math.random() * 16777215).toString(16));
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: data.expenses.map(item => item.ExpenseType),
+                            datasets: [{
+                                data: data.expenses.map(item => item.total_cost),
+                                backgroundColor: colors,
+                                borderColor: colors,
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            tooltips: {
+                                callbacks: {
+                                    label: function (tooltipItem, data) {
+                                        let dataset = data.datasets[tooltipItem.datasetIndex];
+                                        let total = dataset.data.reduce(function (previousValue, currentValue, currentIndex, array) {
+                                            return previousValue + currentValue;
+                                        });
+                                        let currentValue = dataset.data[tooltipItem.index];
+                                        let percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                                        return data.labels[tooltipItem.index] + ": " + percentage + "%";
+                                    }
+                                }
+                            },
+                            animation: {
+                                onComplete: function () {
+                                    if (this.chart !== undefined) {
+                                        let ctx = this.chart.ctx;
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'middle';
+                                        let chart = this;
+                                        let datasets = this.config.data.datasets;
 
-        // Calculate and display net after subtracting expenses
-        let net_after_expenses = (Number(data.totals.net) + Number(data.totalsj.netj)) - total_expenses;
-        document.getElementById('totalnet').innerHTML = '<h2>Net</h2><p>' +  net_after_expenses + '</p>';
+                                        datasets.forEach(function (dataset, i) {
+                                            ctx.font = chart.width / 100 + 'em sans-serif';
+                                            ctx.fillStyle = '#fff';
 
-    })
-    .catch(error => console.error('Error fetching data:', error));
+                                            chart.getDatasetMeta(i).data.forEach(function (p, j) {
+                                                if (datasets[i].data[j] > 0) {
+                                                    let value = datasets[i].data[j];
+                                                    let total = datasets[i].data.reduce((a, b) => a + b, 0);
+                                                    let percentage = Math.round((value / total) * 100);
+                                                    ctx.fillText(percentage + '%', p._model.x, p._model.y);
+                                                }
+                                            });
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    });
 
-    </script>
-    
-</body>
+                    // Handle Totals Data fruit
+                    document.getElementById('totalSales').innerHTML = '<h2>Fruit Sales</h2><p>' + (data.totals.total_sales || 0) + '</p>';
+                    document.getElementById('totalLosses').innerHTML = '<h2>Fruit Losses</h2><p>' + (data.totals.total_losses || 0) + '</p>';
+                    document.getElementById('totalCapital').innerHTML = '<h2>Fruit Capital</h2><p>' + (data.totals.total_capital || 0) + '</p>';
+                    document.getElementById('totalprofit').innerHTML = '<h2>Fruit profit</h2><p>' + (data.totals.total_difference || 0) + '</p>';
+                    document.getElementById('net').innerHTML = '<h2>Fruit Net</h2><p>' + (data.totals.net || 0) + '</p>';
+                    // Handle Totals Data juice
+                    document.getElementById('totalSalesj').innerHTML = '<h2>Juice Sales</h2><p>' + (data.totalsj.total_salesj || 0) + '</p>';
+                    document.getElementById('totalLossesj').innerHTML = '<h2>Juice Losses</h2><p>' + (data.totalsj.total_lossesj || 0) + '</p>';
+                    document.getElementById('totalCapitalj').innerHTML = '<h2>Juice Capital</h2><p>' + (data.totalsj.total_capitalj || 0) + '</p>';
+                    document.getElementById('totalprofitj').innerHTML = '<h2>Juice profit</h2><p>' + (data.totalsj.total_differencej || 0) + '</p>';
+                    document.getElementById('netj').innerHTML = '<h2>Juice Net</h2><p>' + (data.totalsj.netj || 0) + '</p>';
+                    // Handle Totals Data
+                    document.getElementById('totalS').innerHTML = '<h2>Total Sales</h2><p>' + ((Number(data.totals.total_sales) || 0) + (Number(data.totalsj.total_salesj) || 0)) + '</p>';
+                    document.getElementById('totalL').innerHTML = '<h2>Total Losses</h2><p>' + ((Number(data.totals.total_losses) || 0) + (Number(data.totalsj.total_lossesj) || 0)) + '</p>';
+                    document.getElementById('totalC').innerHTML = '<h2>Total Capital</h2><p>' + ((Number(data.totals.total_capital) || 0) + (Number(data.totalsj.total_capitalj) || 0)) + '</p>';
+                    document.getElementById('totalp').innerHTML = '<h2>Total profit</h2><p>' + ((Number(data.totals.total_difference) || 0) + (Number(data.totalsj.total_differencej) || 0)) + '</p>';
+
+                    let total_expenses = data.expenses.reduce((total, expense) => total + Number(expense.total_cost), 0);
+                    // Display total expenses
+                    document.getElementById('totalExpenses').innerHTML = '<h2>Total Expenses</h2><p>' + total_expenses + '</p>';
+
+                    // Calculate and display net after subtracting expenses
+                    let net_after_expenses = ((Number(data.totals.net) || 0) + (Number(data.totalsj.netj) || 0)) - total_expenses;
+                    document.getElementById('totalnet').innerHTML = '<h2>Net</h2><p>' + net_after_expenses + '</p>';
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    // Handle error: Display 0 for all elements
+                    document.getElementById('totalSales').innerHTML = '<h2>Fruit Sales</h2><p>0</p>';
+                    document.getElementById('totalLosses').innerHTML = '<h2>Fruit Losses</h2><p>0</p>';
+                    document.getElementById('totalCapital').innerHTML = '<h2>Fruit Capital</h2><p>0</p>';
+                    document.getElementById('totalprofit').innerHTML = '<h2>Fruit profit</h2><p>0</p>';
+                    document.getElementById('net').innerHTML = '<h2>Fruit Net</h2><p>0</p>';
+                    document.getElementById('totalSalesj').innerHTML = '<h2>Juice Sales</h2><p>0</p>';
+                    document.getElementById('totalLossesj').innerHTML = '<h2>Juice Losses</h2><p>0</p>';
+                    document.getElementById('totalCapitalj').innerHTML = '<h2>Juice Capital</h2><p>0</p>';
+                    document.getElementById('totalprofitj').innerHTML = '<h2>Juice profit</h2><p>0</p>';
+                    document.getElementById('netj').innerHTML = '<h2>Juice Net</h2><p>0</p>';
+                    document.getElementById('totalS').innerHTML = '<h2>Total Sales</h2><p>0</p>';
+                    document.getElementById('totalL').innerHTML = '<h2>Total Losses</h2><p>0</p>';
+                    document.getElementById('totalC').innerHTML = '<h2>Total Capital</h2><p>0</p>';
+                    document.getElementById('totalp').innerHTML = '<h2>Total profit</h2><p>0</p>';
+                    document.getElementById('totalExpenses').innerHTML = '<h2>Total Expenses</h2><p>0</p>';
+                    document.getElementById('totalnet').innerHTML = '<h2>Net</h2><p>0</p>';
+                });
+        </script>
+    </body>
 </html>

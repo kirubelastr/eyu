@@ -78,10 +78,9 @@ function calculateTotalSalesJ($conn2) {
             // Calculate the total sales
             $total_salesj += $sold_quantity * $quantities[$index] * $inventoryRow['price'];
         }
+        $total_salesj *= $sold_quantity;
     }
 
-    // Multiply the total sales with the quantity from the sales table
-    $total_salesj *= $sold_quantity;
 
     return $total_salesj;
 }

@@ -18,7 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $data = json_decode($postData, true);
 
     $rowId = $data['rowid'];
-    $quantity = intval($data['quantity']);
+    $quantity = floatval($data['quantity']);
+
     $lossReason = $data['lossReason'];
 
     // Validate the existence of the item in the inventory
@@ -29,16 +30,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if ($result->num_rows > 0) {
         $inventoryRow = $result->fetch_assoc();
+        $inventoryRow['quantity'] = floatval($inventoryRow['quantity']);
 
         // Calculate and update the inventory quantity
         $quantityToDeduct = min($inventoryRow['quantity'], $quantity);
         $stmt = $conn2->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
-        $stmt->bind_param("ii", $quantityToDeduct, $rowId);
+        $stmt->bind_param("di", $quantityToDeduct, $rowId); // 'd' is used for double which can also represent float
         $stmt->execute();
 
         // Record the loss in the losses table
         $stmt = $conn2->prepare("INSERT INTO losses (item_id, quantity, reason) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $rowId, $quantityToDeduct, $lossReason);
+        $stmt->bind_param("ids", $rowId, $quantityToDeduct, $lossReason); // 'd' is used for double which can also represent float
         $stmt->execute();
 
         // Fetch the item name from the inventory table
@@ -52,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         // Insert the data into the sales_and_losses table
         $stmt = $conn2->prepare("INSERT INTO sales_and_losses (action, item_name, quantity, reason) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssis",$losses, $itemName, $quantityToDeduct, $lossReason);
+        $stmt->bind_param("ssds",$losses, $itemName, $quantityToDeduct, $lossReason); // 'd' is used for double which can also represent float
         $stmt->execute();
 
 

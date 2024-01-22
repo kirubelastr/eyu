@@ -124,41 +124,44 @@
     }
 
     function submitForm() {
-        const usernameInput = document.getElementsByName('username')[0].value;
-        const passwordInput = document.getElementsByName('password')[0].value;
-        const storeInput = document.getElementsByName('store')[0].value;
+    const usernameInput = document.getElementsByName('username')[0].value;
+    const passwordInput = document.getElementsByName('password')[0].value;
+    const storeInput = document.getElementsByName('store')[0].value;
 
-        if (!usernameInput || !passwordInput || !storeInput) {
-            document.getElementById('errorMessage').innerText = "Please fill in all the fields.";
-            return;
-        }else{
-            const form = document.getElementById('loginForm');
-            const formData = new FormData(form);
+    if (!usernameInput || !passwordInput || !storeInput) {
+        document.getElementById('errorMessage').innerText = "Please fill in all the fields.";
+        return;
+    } else {
+        const form = document.getElementById('loginForm');
+        const formData = new FormData(form);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'login.php', true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.success) {
-                                window.location.href = 'index.html';
-                            } else {
-                                document.getElementById('errorMessage').innerText = response.message;
-                            }
-                        } catch (e) {
-                            console.error("Parsing error:", e);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'login.php', true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            window.location.href = 'index.html';
+                        } else {
+                            document.getElementById('errorMessage').innerText = response.message;
                         }
-                    } else {
-                        console.error("HTTP request error:", xhr.status);
+                    } catch (e) {
+                        console.error("Parsing error:", e);
+                        document.getElementById('errorMessage').innerText = "An error occurred while processing your request.";
                     }
+                } else {
+                    console.error("HTTP request error:", xhr.status);
+                    document.getElementById('errorMessage').innerText = "An error occurred while processing your request.";
                 }
-            };
+            }
+        };
 
-            xhr.send(formData);
-        }
+        xhr.send(formData);
     }
+}
+
 
     animate();
 </script>
