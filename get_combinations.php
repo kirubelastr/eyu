@@ -48,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     $combinationId = $data['combinationId'];
     $quantity = intval($data['quantity']);
-    $sellingPrice = floatval($data['sellingPrice']);
 
     $sql = "SELECT rowID, quantity, price FROM combinations WHERE id = ?";
     $stmt = $conn2->prepare($sql);
@@ -62,26 +61,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $quantities = array_map('floatval', explode(",", $row['quantity'])); // Convert to float
                 $prices = array_map('floatval', explode(",", $row['price'])); // Convert to float
                 $total_difference = 0;
-            foreach ($rowids as $index => $rowid) {
-                $quantityToDeduct = $quantities[$index] * $quantity;
-    
-                $stmt = $conn2->prepare("SELECT quantity, price FROM inventory WHERE id = ?");
-                $stmt->bind_param("i", $rowid);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $inventoryRow = $result->fetch_assoc();
-    
-                // Calculate the price difference
-                $price_difference = $prices[$index] - $inventoryRow['price'];
-                // Multiply the price difference by the deducted quantity
-                $difference_times_quantity = $price_difference * $quantityToDeduct;
-                // Add this to the total difference
-                $total_difference += $difference_times_quantity;
-    
-                $stmt = $conn2->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
-                $stmt->bind_param("di", $quantityToDeduct, $rowid);
-                $stmt->execute();
-            }
+                    foreach ($rowids as $index => $rowid) {
+                        $quantityToDeduct = $quantities[$index] * $quantity;
+            
+                        $stmt = $conn2->prepare("SELECT quantity, price FROM inventory WHERE id = ?");
+                        $stmt->bind_param("i", $rowid);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $inventoryRow = $result->fetch_assoc();
+            
+                        // Calculate the price difference
+                        $price_difference = $prices[$index] *$quantity;
+                        // Add this to the total difference
+                        $total_difference += $price_difference;
+            
+                        $stmt = $conn2->prepare("UPDATE inventory SET quantity = quantity - ? WHERE id = ?");
+                        $stmt->bind_param("di", $quantityToDeduct, $rowid);
+                        $stmt->execute();
+                    }
     
             // Insert the total difference into the sales table
             $stmt = $conn2->prepare("INSERT INTO sales (item_id, quantity, selling_price) VALUES (?, ?, ?)");

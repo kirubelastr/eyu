@@ -541,9 +541,10 @@ function handleResponse(section) {
         function sellItem() {
             console.log("sell");
             
-            var combinationId = document.getElementById('sellItemId').value;
-            var quantity = document.getElementById('sellQuantity').value;
-            var maxq = document.getElementById('maxQuantity').value;
+            var combinationId = Number(document.getElementById('sellItemId').value);
+            var quantity = Number(document.getElementById('sellQuantity').value);
+            var maxq = Number(document.getElementById('maxQuantity').value);
+
             console.log(combinationId+quantity);
             if (!combinationId || !quantity || !maxq  || quantity == 0 || maxq == 0) {
                 alert("Inputs cannot be empty or the values 0.");

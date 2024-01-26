@@ -86,15 +86,9 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, .1);
             margin-bottom: 10px;
         }
-
-        .form-container {
-
-            flex: 1;
-            margin-right: 20px;
-        }
-
-        .dropdown {
-            margin-top: 20px;
+        .scrollable-table {
+            height: 300px; /* Adjust this height to your preference */
+            overflow: auto;
         }
 
         table {
@@ -107,22 +101,30 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            background-color: #eda4a4;
         }
+
         td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
             height: 40px; /* Adjust this height to your preference */
         }
-        
-
-        th {
-            background-color: #eda4a4;
-        }
 
         tr:hover {
             background-color: #f5f5f5;
         }
+
+        .form-container {
+
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .dropdown {
+            margin-top: 20px;
+        }
+       
 
         .edit-delete {
             display: flex;
@@ -143,8 +145,47 @@
         }
         .scrollable {
             overflow-y: auto;
-            height: 50px; /* Adjust this height to suit your needs */
+            height: 100px; /* Adjust this height to suit your needs */
         }
+        /* The Modal (background) */
+        .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        }
+
+        /* The Close Button */
+        .close {
+        color: #aaaaaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+        }
+
     </style>
 </head>
 
@@ -171,19 +212,23 @@
                             <option value="weekly">Weekly</option>
                         </select>
                     </div>
-                    <table id="salesTable" >
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity Sold</th>
-                                <th>Total Sales</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesBody"class="scrollable">
-                            <!-- Sales data will be dynamically inserted here -->
-                        </tbody>
-                    </table>
+                    <div class="scrollable-table">
+                        <table id="salesTable" >
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity Sold</th>
+                                    <th>selling price </th>
+                                    <th>total sales</th>
+                                    <th>date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesBody"class="scrollable">
+                                <!-- Sales data will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                     </div>          
                     <div id="totalSales"></div>
                 </div>
             </section>
@@ -200,25 +245,49 @@
                             <option value="weeklyj">Weekly</option>
                         </select>
                     </div>
-                    <table id="salesTablej">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity Sold</th>
-                                <th>Total Sales</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="salesBodyj"class="scrollable">
-                            <!-- Sales data will be dynamically inserted here -->
-                        </tbody>
-                    </table>
+                    <div class="scrollable-table">
+                        <table id="salesTablej">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity Sold</th>
+                                    <th>selling price </th>
+                                    <th>total sales</th>
+                                    <th>date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesBodyj"class="scrollable">
+                                <!-- Sales data will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
                     <div id="totalSalesj"></div>
                 </div>
             </section>
         </div>
-    </div>
+    </div><!-- The Modal -->
+  <!-- The Modal -->
+<div id="editModal" class="modal">
 
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">×</span>
+      <form id="editForm">
+        <label for="quantity">Quantity (Max: <span id="maxQuantity"></span>):</label><br>
+        <input type="number" id="quantity" name="quantity"><br>
+        <label for="details">Details:</label><br>
+        <p id="details"></p>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+  
+  </div>
+  
+  <!-- Trigger/Open The Modal -->
+  <button id="editBtn">Edit Sales</button>
+  
+    
     <script>
    var currentPage = location.pathname.split("/").slice(-1)[0];
 
@@ -240,7 +309,6 @@ function setCurrentPageStyle() {
 
 
 setCurrentPageStyle();
-
 function fetchSalesData(filter) {
     var filter = document.getElementById('salesFilter').value;
 
@@ -252,7 +320,7 @@ function fetchSalesData(filter) {
             var salesBody = document.getElementById('salesBody');
             salesBody.innerHTML = '';
 
-            document.getElementById('totalSales').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_price), 0).toFixed(2);
+            document.getElementById('totalSales').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_price * row.quantity_sold), 0).toFixed(2);
 
             data.forEach(row => {
                 var tr = document.createElement('tr');
@@ -263,13 +331,21 @@ function fetchSalesData(filter) {
                 tdQuantitySold.textContent = row.quantity_sold;
                 tr.appendChild(tdQuantitySold);
                 var tdTotalSales = document.createElement('td');
-                tdTotalSales.textContent = row.total_price;
+                tdTotalSales.textContent = parseFloat(row.total_price).toFixed(2);
                 tr.appendChild(tdTotalSales);
+                var tdTotal= document.createElement('td');
+                tdTotal.textContent = (parseFloat(row.total_price) * row.quantity_sold).toFixed(2);
+
+                tr.appendChild(tdTotal);
+                var tddate= document.createElement('td');
+                tddate.textContent = row.date;
+                tr.appendChild(tddate);
+               
                 var tdAction = document.createElement('td');
                 var editButton = document.createElement('button');
                 editButton.textContent = 'Edit';
                 editButton.onclick = function() {
-                    editSalesData(row.id);
+                    editSalesData(row.id, row.quantity_sold, row.total_price);
                 };
                 tdAction.appendChild(editButton);
                 var deleteButton = document.createElement('button');
@@ -284,39 +360,200 @@ function fetchSalesData(filter) {
         })
         .catch(error => console.error('Error:', error));
 }
+var currentPopup = null;
 
-function editSalesData(id) {
-    var newQuantitySold = prompt('Enter the new quantity sold:');
-    var newTotalSales = prompt('Enter the new total sales:');
+function editSalesData(id, quantitySold, totalSales) {
+    // If there is already a popup open, close it
+    if (currentPopup && document.body.contains(currentPopup)) {
+        document.body.removeChild(currentPopup);
+    }
+    // Create a div for the popup
+    var popupDiv = document.createElement('div');
+    popupDiv.id = 'popupDiv';
+    popupDiv.style.display = 'block';
+    popupDiv.style.position = 'fixed';
+    popupDiv.style.zIndex = '1';
+    popupDiv.style.left = '0';
+    popupDiv.style.top = '0';
+    popupDiv.style.width = '100%';
+    popupDiv.style.height = '100%';
+    popupDiv.style.overflow = 'auto';
+    popupDiv.style.backgroundColor = 'rgba(0,0,0,0.4)';
 
-    fetch('sales.php', {
+    // Create a form inside the popup
+    var form = document.createElement('form');
+    form.style.backgroundColor = '#f1f1f1';
+    form.style.margin = '15% auto';
+    form.style.padding = '10px';
+    form.style.border = '1px solid #888';
+    form.style.width = '40%';
+
+    // Display the current quantity sold and total sales
+    var currentQuantitySold = document.createElement('p');
+    currentQuantitySold.textContent = 'Current quantity sold: ' + quantitySold;
+    form.appendChild(currentQuantitySold);
+
+    var currentTotalSales = document.createElement('p');
+    currentTotalSales.textContent = 'Current selling price: ' + totalSales;
+    form.appendChild(currentTotalSales);
+
+    // Fetch the max quantity that can be sold for the product
+    fetch('getMaxFQuantity.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            action: 'edit',
-            id: id,
-            quantity_sold: newQuantitySold,
-            total_sales: newTotalSales,
-            filter: document.getElementById('salesFilter').value,
+            sales_id: id,
         }),
     })
     .then(response => response.json())
     .then(data => {
-        if (data.error) {
-            alert('Failed to edit sales data: ' + data.error);
-        } else {
-            updateSalesTable(data);
-        }
+        var maxQuantitySold = document.createElement('p');
+        maxQuantitySold.textContent = 'Max quantity that can be sold: ' + data.max_quantity;
+        form.insertBefore(maxQuantitySold, newQuantitySold);
+
+    // Add a line break for spacing
+        form.appendChild(document.createElement('br'));
+        var minsellingprice = document.createElement('p');
+        minsellingprice.textContent = 'min selling price: ' + data.price;
+        form.insertBefore(minsellingprice, newTotalSales);
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error: ' + error.message);
     });
+
+   // Create input fields for the new quantity sold and total sales
+    var newQuantitySold = document.createElement('input');
+    newQuantitySold.type = 'number';
+    newQuantitySold.name = 'newQuantitySold';
+    newQuantitySold.placeholder = 'Enter the new quantity sold';
+    newQuantitySold.style.width = '80%';
+    newQuantitySold.step = 'any'; // Accept decimal numbers
+    form.appendChild(newQuantitySold);
+
+    var newTotalSales = document.createElement('input');
+    newTotalSales.type = 'number';
+    newTotalSales.name = 'newTotalSales';
+    newTotalSales.placeholder = 'Enter the new total sales';
+    newTotalSales.style.width = '80%';
+    newTotalSales.step = 'any'; // Accept decimal numbers
+    form.appendChild(newTotalSales);
+    form.appendChild(document.createElement('br'));
+
+
+    // Create a submit button for the form
+    var submitButton = document.createElement('input');
+    submitButton.type = 'submit';
+    submitButton.value = 'Submit';
+    submitButton.style.backgroundColor = '#4CAF50'; // Green
+    submitButton.style.color = 'white';
+    form.appendChild(submitButton);
+
+    // Create a cancel button for the form
+    var cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = function() {
+        // Remove the popup when the cancel button is clicked
+        document.body.removeChild(popupDiv);
+        currentPopup = null;
+    };
+    cancelButton.style.backgroundColor = '#f44336'; // Red
+    cancelButton.style.color = 'white';
+    form.appendChild(cancelButton);
+
+    // Append the form to the popup div
+    popupDiv.appendChild(form);
+
+    // Append the popup div to the body of the document
+    document.body.appendChild(popupDiv);
+
+    // Set the current popup
+    currentPopup = popupDiv;
+
+    // When the user clicks anywhere outside of the popup, close it
+    window.onclick = function(event) {
+        if (event.target == popupDiv) {
+            popupDiv.style.display = 'none';
+            currentPopup = null;
+        }
+    }
+
+    // When the form is submitted, send the data to the server and remove the popup
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        fetch('sales.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'edit',
+                id: id,
+                quantity_sold: newQuantitySold.value,
+                total_sales: newTotalSales.value,
+                filter: document.getElementById('salesFilter').value,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove the first popup
+            document.body.removeChild(popupDiv);
+            currentPopup = null;
+
+            // Create a new popup for the server response
+            var responsePopup = document.createElement('div');
+            responsePopup.style.display = 'block';
+            responsePopup.style.position = 'fixed';
+            responsePopup.style.zIndex = '1';
+            responsePopup.style.left = '0';
+            responsePopup.style.top = '0';
+            responsePopup.style.width = '100%';
+            responsePopup.style.height = '100%';
+            responsePopup.style.overflow = 'auto';
+            responsePopup.style.backgroundColor = 'rgba(0,0,0,0.4)';
+
+            // Create a container for the response text and close button
+            var responseContainer = document.createElement('div');
+            responseContainer.style.backgroundColor = '#f1f1f1';
+            responseContainer.style.margin = '15% auto';
+            responseContainer.style.padding = '20px';
+            responseContainer.style.border = '1px solid #888';
+            responseContainer.style.width = '30%';
+            responseContainer.style.textAlign = 'center'; // Center the contents
+
+            var responseText = document.createElement('p');
+            if (data.error) {
+                responseText.textContent = 'Failed to edit sales data: ' + data.error;
+            } else {
+                updateSalesTable(data);
+                responseText.textContent = 'Sales data edited successfully';
+            }
+            responseContainer.appendChild(responseText);
+
+            // Add a close button to the response container
+            var closeButton = document.createElement('button');
+            closeButton.textContent = 'Close';
+            closeButton.onclick = function() {
+                document.body.removeChild(responsePopup);
+            };
+            responseContainer.appendChild(closeButton);
+
+            // Add the response container to the response popup
+            responsePopup.appendChild(responseContainer);
+            document.body.appendChild(responsePopup);
+            currentPopup = responsePopup;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
+    }
 }
 
+
 function deleteSalesData(id) {
+    if (confirm('Are you sure you want to delete this sales data?')) {
     fetch('sales.php', {
         method: 'POST',
         headers: {
@@ -340,6 +577,7 @@ function deleteSalesData(id) {
         console.error('Error:', error);
         alert('Error: ' + error.message);
     });
+    }
 }
 
 function updateSalesTable(data) {
@@ -350,6 +588,7 @@ function updateSalesData() {
     var filter = document.getElementById('salesFilter').value;
     fetchSalesData(filter);
 }
+
 function updateSalesjuiceData(filterj) {
     var filter = document.getElementById('salesFilterj').value;
 
@@ -358,97 +597,152 @@ function updateSalesjuiceData(filterj) {
     .then(data => {
         console.log('Data received from server:', data);
 
-        var salesBody = document.getElementById('salesBodyj');
-        salesBody.innerHTML = '';
-
-            document.getElementById('totalSalesj').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_price), 0).toFixed(2);
+        var salesBodyj = document.getElementById('salesBodyj');
+        salesBodyj.innerHTML = '';
+        document.getElementById('totalSalesj').textContent = 'Total Sales: ' + data.reduce((total, row) => total + parseFloat(row.total_pricej), 0).toFixed(2);
 
             data.forEach(row => {
                 var tr = document.createElement('tr');
-                var tdProduct = document.createElement('td');
-                tdProduct.textContent = row.product_name;
-                tr.appendChild(tdProduct);
-                var tdQuantitySold = document.createElement('td');
-                tdQuantitySold.textContent = row.quantity_sold;
-                tr.appendChild(tdQuantitySold);
+                var tdProductj = document.createElement('td');
+                tdProductj.textContent = row.product_namej;
+                tr.appendChild(tdProductj);
+                var tdQuantitySoldj = document.createElement('td');
+                tdQuantitySoldj.textContent = row.quantity_soldj;
+                tr.appendChild(tdQuantitySoldj);
                 var tdTotalSalesj = document.createElement('td');
-                tdTotalSalesj.textContent = row.total_price;
+                tdTotalSalesj.textContent = row.price;
                 tr.appendChild(tdTotalSalesj);
-                var tdAction = document.createElement('td');
-                var editButton = document.createElement('button');
-                editButton.textContent = 'Edit';
-                editButton.onclick = function() {
-                    editSalesDataJuice(row.id);
+                var tdTotalj = document.createElement('td');
+                tdTotalj.textContent = row.total_pricej;
+                tr.appendChild(tdTotalj);
+                var tddatej = document.createElement('td');
+                tddatej.textContent = row.datej;
+                tr.appendChild(tddatej);
+                
+                var tdActionj = document.createElement('td');
+                var editButtonj = document.createElement('button');
+                editButtonj.textContent = 'Edit';
+                editButtonj.onclick = function() {
+                    editSalesDataJuice(row.idj);
                 };
-                tdAction.appendChild(editButton);
-                var deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.onclick = function() {
-                    deleteSalesDataJuice(row.id);
+                tdActionj.appendChild(editButtonj);
+                var deleteButtonj = document.createElement('button');
+                deleteButtonj.textContent = 'Delete';
+                deleteButtonj.onclick = function() {
+                    deleteSalesDataJuice(row.idj);
                 };
-                tdAction.appendChild(deleteButton);
-                tr.appendChild(tdAction);
-                salesBody.appendChild(tr);
+                tdActionj.appendChild(deleteButtonj);
+                tr.appendChild(tdActionj);
+                salesBodyj.appendChild(tr);
             });
         })
         .catch(error => console.error('Error:', error));
+}// Get the modal
+var modal = document.getElementById("editModal");
+
+// Get the button that opens the modal
+var btn = document.getElementById("editBtn");
+
+// Get the <span> element that closes the modal
+var span = document.getElementsByClassName("close")[0];
+
+// When the user clicks the button, open the modal 
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+  modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
 }
 
 function editSalesDataJuice(id) {
-    var newQuantitySoldj = prompt('Enter the new quantity sold:');
-    var newTotalSalesj = prompt('Enter the new total sales:');
+    // Fetch the max quantity for the combination
+    fetch('getMaxQuantity.php?salesId=' + id)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Failed to fetch max quantity: ' + data.error);
+            } else {
+                // Set the max attribute of the quantity input field
+                document.getElementById('quantity').max = data.maxQuantity;
+                // Display the max quantity
+                document.getElementById('maxQuantity').textContent = data.maxQuantity;
+                // Open the modal
+                modal.style.display = "block";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
 
-    fetch('salesj.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'edit',
-            id: id,
-            quantity_sold: newQuantitySoldj,
-            total_sales: newTotalSalesj,
-            filter: document.getElementById('salesFilterj').value,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Failed to edit sales data: ' + data.error);
-        } else {
-            juiceupdateSalesTable(data);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error: ' + error.message);
-    });
+    // When the user submits the form, send a POST request to the server
+    document.getElementById("editForm").onsubmit = function(event) {
+        event.preventDefault();
+        var quantity = Math.floor(document.getElementById("quantity").value);
+
+        fetch('salesj.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'edit',
+                id: id,
+                quantity_sold: quantity,
+                filter: document.getElementById('salesFilterj').value,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Failed to edit sales data: ' + data.error);
+            } else {
+                juiceupdateSalesTable(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
+    }
 }
 
+
 function deleteSalesDataJuice(id) {
-    fetch('salesj.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            action: 'delete',
-            id: id,
-            filter: document.getElementById('salesFilterj').value,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Failed to delete sales data: ' + data.error);
-        } else {
-            juiceupdateSalesTable(data);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error: ' + error.message);
-    });
+    if (confirm('Are you sure you want to delete this sales data?')) {
+        fetch('salesj.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'delete',
+                id: id,
+                filter: document.getElementById('salesFilterj').value,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Failed to delete sales data: ' + data.error);
+            } else {
+                juiceupdateSalesTable(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error: ' + error.message);
+        });
+    }
 }
 
 function juiceupdateSalesTable(data) {
